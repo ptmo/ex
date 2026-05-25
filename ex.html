@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anoro Explorer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* CSS Variables untuk Dual Mode (Premium & Soft) */
+    :root {
+      --bg-body: #f4f7f9;
+      --bg-surface: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --accent: #38bdf8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+      --success: #10b981;
+      --error: #ef4444;
+      --code-bg: #f1f5f9;
+    }
+    
+    [data-theme="dark"] {
+      --bg-body: #0f172a;
+      --bg-surface: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #7dd3fc;
+      --accent: #0284c7;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+      --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.3);
+      --code-bg: #0b1120;
+    }
+
+    * { box-sizing: border-box; transition: background-color 0.3s ease, border-color 0.3s ease; }
+    body {
+      margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-body); color: var(--text-main); line-height: 1.5;
+    }
+    
+    /* Layout */
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
+    /* Navbar */
+    .navbar {
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 15px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 30px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 24px; letter-spacing: -0.5px; }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+
+    /* Buttons & Inputs */
+    .btn {
+      padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 14px;
+      cursor: pointer; border: none; outline: none;
+      background: var(--primary); color: #fff; transition: all 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn.secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+    .btn.secondary:hover { background: var(--border-color); }
+    
+    .input {
+      padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: var(--bg-surface); color: var(--text-main); width: 100%; font-size: 15px; outline: none;
+    }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+
+    /* Smart Search Hero */
+    .hero {
+      background: var(--bg-surface); border-radius: 16px; padding: 40px 30px;
+      text-align: center; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);
+      margin-bottom: 30px;
+    }
+    .hero h1 { margin: 0 0 10px; font-size: 32px; font-weight: 800; }
+    .hero p { color: var(--text-muted); margin: 0 0 25px; font-size: 16px; }
+    .search-bar { display: flex; gap: 10px; max-width: 700px; margin: 0 auto; }
+    .search-bar .input { flex: 1; padding: 16px; font-size: 16px; border-radius: 12px; }
+    .search-bar .btn { padding: 0 24px; border-radius: 12px; font-size: 16px; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card {
+      background: var(--bg-surface); padding: 20px; border-radius: 12px;
+      border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+    }
+    .stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 8px;}
+    .stat-value { font-size: 24px; font-weight: 800; }
+
+    /* Main Content Split */
+    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+    .panel {
+      background: var(--bg-surface); border-radius: 12px; padding: 20px;
+      border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);
+    }
+    .panel-header { font-size: 18px; font-weight: 700; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+
+    /* Tools & Tabs */
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+    .tabs .btn { padding: 6px 12px; font-size: 13px; font-weight: 500; border-radius: 20px; }
+    
+    /* Developer Console Result */
+    .console-result {
+      background: var(--code-bg); padding: 15px; border-radius: 8px;
+      border: 1px solid var(--border-color); overflow-x: auto;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 13px; color: var(--text-main); max-height: 400px; overflow-y: auto;
+    }
+
+    /* Status Dot */
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-color); font-size: 13px; font-weight: 600;}
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; }
+    .dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot.offline { background: var(--error); box-shadow: 0 0 8px var(--error); }
+
+    /* History Tables / Lists */
+    .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+    .history-list { display: flex; flex-direction: column; }
+    .history-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+    .history-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .history-left { display: flex; align-items: center; gap: 12px; }
+    .history-icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(2, 132, 199, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 800; font-size: 14px; }
+    .history-info { display: flex; flex-direction: column; gap: 2px; }
+    .history-title { font-weight: 700; font-size: 14px; color: var(--primary); cursor: pointer; }
+    .history-title:hover { text-decoration: underline; }
+    .history-sub { font-size: 12px; color: var(--text-muted); }
+    .history-right { text-align: right; }
+    .badge-fee { background: var(--bg-body); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .history-grid { grid-template-columns: 1fr; }
+      .search-bar { flex-direction: column; }
+      .search-bar .btn { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <nav class="navbar">
+      <div class="brand">
+        <div class="brand-icon"></div>
+        Anoro
+      </div>
+      <div class="nav-actions">
+        <div class="status-badge" id="statusBadge">
+          <div class="dot" id="statusDot"></div>
+          <span id="statusText">Connecting...</span>
+        </div>
+        <button class="btn secondary" id="themeToggle" onclick="toggleTheme()">🌙</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <h1>Anoro Explorer</h1>
+      <p>Pencarian cerdas untuk Blocks, Transaksi, Alamat (Addresses), dan Smart Contracts.</p>
+      <div class="search-bar">
+        <input type="text" id="smartSearchInput" class="input" placeholder="Cari by Alamat / Txn Hash / Block / Contract..." onkeypress="handleEnter(event)" />
+        <button class="btn" onclick="executeSmartSearch()">Cari Data</button>
+      </div>
+    </section>
+
+    <details style="margin-bottom: 20px; color: var(--text-muted); cursor: pointer;">
+      <summary style="font-size: 14px; font-weight: 500;">⚙️ Konfigurasi RPC Server (Dev Mode)</summary>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <input id="rpcInput" class="input" style="flex:1;" placeholder="http://127.0.0.1:8545" />
+        <button class="btn secondary" id="saveRpcBtn">Simpan RPC</button>
+      </div>
+    </details>
+
+    <div class="tabs" style="margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+      <button class="btn" id="tabDashboard" onclick="switchTab('dashboard')">🏠 Dashboard</button>
+      <button class="btn secondary" id="tabRichList" onclick="switchTab('richlist')">🏆 Rich List</button>
+    </div>
+
+    <div id="viewDashboard">
+      
+      <div class="stats-grid" id="statsContainer">
+        </div>
+
+      <div class="history-grid">
+        <div class="panel">
+          <div class="panel-header">📦 Latest Blocks</div>
+          <div class="history-list" id="recentBlocksList">
+            <div style="color: var(--text-muted); font-size: 13px;">Memuat blok terbaru...</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">📄 Latest Transactions</div>
+          <div class="history-list" id="recentTxsList">
+            <div style="color: var(--text-muted); font-size: 13px;">Memuat transaksi terbaru...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-grid">
+        
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div class="panel">
+            <div class="panel-header">📈 Transaksi Harian (14 Hari Terakhir)</div>
+            <div style="position: relative; height: 250px; width: 100%;">
+              <canvas id="txChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="panel">
+            <div class="panel-header">Data Inspector (Konsol API)</div>
+            <div class="tabs" id="quickTabs">
+              <button class="btn secondary" onclick="loadEndpoint('/status')">Network Status</button>
+              <button class="btn secondary" onclick="loadEndpoint('/block/latest')">Latest Block</button>
+              <button class="btn secondary" onclick="loadEndpoint('/validators')">Validators</button>
+              <button class="btn secondary" onclick="loadEndpoint('/mempool')">Mempool</button>
+              <button class="btn secondary" onclick="loadEndpoint('/tokens')">Tokens</button>
+              <button class="btn secondary" onclick="loadEndpoint('/contracts')">Contracts</button>
+            </div>
+            <pre id="consoleOutput" class="console-result">Menunggu perintah...</pre>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          
+          <div class="panel">
+            <div class="panel-header">Network Modules</div>
+            <div class="tabs" style="flex-direction: column;" id="moduleBoxes">
+               <div style="color: var(--text-muted); font-size: 14px;">Memuat modul...</div>
+            </div>
+          </div>
+
+          <div class="panel" style="text-align: center; padding: 25px 20px; border: 1px solid var(--primary); background: linear-gradient(180deg, var(--bg-surface) 0%, rgba(2, 132, 199, 0.03) 100%);">
+            <h2 style="margin-top:0; font-size: 18px; color: var(--primary);">🚰 Testnet Faucet</h2>
+            <p style="color:var(--text-muted); font-size: 13px; margin-bottom: 20px;">Klaim 10 ANR (Testnet Coin) gratis setiap 24 jam.</p>
+            
+            <input type="text" id="faucetInput" class="input" placeholder="Dompet: anr1..." style="margin-bottom: 15px; text-align: center; font-family: monospace; font-size: 14px;">
+            
+            <button class="btn" style="width: 100%; padding: 12px; font-size: 14px;" onclick="claimFaucet()">💸 Minta Koin ANR</button>
+            <div id="faucetStatus" style="margin-top: 12px; font-weight: bold; font-size: 12px;"></div>
+          </div>
+
+        </div>
+        
+      </div> </div> <div id="viewRichlist" style="display: none;">
+      <div class="panel">
+        <div class="panel-header">🏆 Anoro Rich List (Top Accounts by Balance)</div>
+        <p style="color:var(--text-muted); font-size:14px;">Menampilkan dompet dengan kepemilikan ANR terbesar di jaringan.</p>
+        <div class="console-result" id="richListOutput" style="max-height: none;">
+          Memuat klasemen dompet...
+        </div>
+      </div>
+    </div>
+
+  </div> <script>
+  // ===============================
+  // UI & THEME LOGIC
+  // ===============================
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeToggle').innerText = isDark ? '🌙' : '☀️';
+    localStorage.setItem('anoroTheme', isDark ? 'light' : 'dark');
+    if (myChart) renderChart(); // Update chart color
+  }
+
+  if(localStorage.getItem('anoroTheme') === 'dark') toggleTheme();
+
+  // ===============================
+  // CORE EXPLORER LOGIC
+  // ===============================
+  const $ = id => document.getElementById(id);
+
+  function inferRpc(){
+    const saved = localStorage.getItem('anoroExplorerRPC');
+    if (saved) return saved;
+    return 'http://127.0.0.1:8545';
+  }
+
+  function apiBase(){ return $('rpcInput').value.trim().replace(/\/$/,''); }
+
+  async function api(path){
+    const url = apiBase() + path;
+    const res = await fetch(url, {headers:{'content-type':'application/json'}});
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return text; }
+  }
+
+  function updateStatus(isOnline, text = "Online") {
+    $('statusDot').className = 'dot ' + (isOnline ? 'online' : 'offline');
+    $('statusText').textContent = text;
+  }
+
+  async function loadEndpoint(path) {
+    $('consoleOutput').textContent = `Fetching: ${apiBase()}${path}...\n`;
+    try { 
+      const data = await api(path);
+      $('consoleOutput').textContent = JSON.stringify(data, null, 2); 
+    }
+    catch(e) { $('consoleOutput').textContent = `Error: ${e.message}\nPastikan server (anorod) berjalan dan RPC URL benar.`; }
+  }
+
+  function handleEnter(e) { if(e.key === 'Enter') executeSmartSearch(); }
+  
+  function executeSmartSearch() {
+    const val = $('smartSearchInput').value.trim();
+    if (!val) {
+      $('consoleOutput').textContent = 'Silakan masukkan data pencarian terlebih dahulu.';
+      return;
+    }
+    if (/^\d+$/.test(val)) loadEndpoint('/block?height=' + val);
+    else if (val.startsWith('anrc')) loadEndpoint('/contract?address=' + val);
+    else if (val.startsWith('anr')) loadEndpoint('/balance?address=' + val);
+    else loadEndpoint('/tx?hash=' + val);
+  }
+
+  async function loadRecentHistory(latestHeight) {
+    const blocksBox = $('recentBlocksList');
+    const txsBox = $('recentTxsList');
+
+    if (!latestHeight) {
+      blocksBox.innerHTML = '<div class="history-sub">Belum ada block.</div>';
+    } else {
+      let blocksHtml = '';
+      let count = 0;
+      for (let h = Number(latestHeight); h >= 0 && count < 5; h--) {
+        try {
+          const b = await api('/block?height=' + encodeURIComponent(h));
+          const hashShort = b.hash ? b.hash.slice(0,14) + '...' : 'Unknown';
+          const proposerShort = b.proposer ? b.proposer.slice(0,10) + '...' : '-';
+          
+          blocksHtml += `
+            <div class="history-row">
+              <div class="history-left">
+                <div class="history-icon">Bk</div>
+                <div class="history-info">
+                  <span class="history-title" onclick="loadEndpoint('/block?height=${b.height}')">${b.height}</span>
+                  <span class="history-sub">Proposer: ${proposerShort}</span>
+                </div>
+              </div>
+              <div class="history-right">
+                <div class="badge-fee">${b.tx_count || 0} TXs</div>
+              </div>
+            </div>`;
+          count++;
+        } catch(e) {}
+      }
+      blocksBox.innerHTML = blocksHtml || '<div class="history-sub">Gagal memuat detail block.</div>';
+    }
+
+    try {
+      txsBox.innerHTML = `
+        <div class="history-row">
+           <div class="history-left">
+              <div class="history-icon" style="border-radius:50%;">Tx</div>
+              <div class="history-info">
+                <span class="history-title" onclick="loadEndpoint('/tx?hash=sample')">0x8f4a...9b1c</span>
+                <span class="history-sub">Dari: anr7x... Ke: anrc9p...</span>
+              </div>
+           </div>
+           <div class="history-right">
+              <div class="badge-fee">Sukses</div>
+           </div>
+        </div>
+        <div class="history-sub" style="margin-top:10px;">(Integrasikan API /tx/latest backend Anda di sini)</div>
+      `;
+    } catch(e) {
+      txsBox.innerHTML = '<div class="history-sub">Belum ada transaksi.</div>';
+    }
+  }
+
+  async function loadDashboard() {
+    try {
+      const s = await api('/status');
+      updateStatus(true, `Network: ${s.chain_id || 'Anoro'}`);
+      
+      const valCount = Array.isArray(s.validators) ? s.validators.length : (s.validator_count ?? 0);
+      
+      $('statsContainer').innerHTML = `
+        <div class="stat-card">
+           <div class="stat-label">🧊 Latest Height</div>
+           <div class="stat-value">${s.latest_height ? Number(s.latest_height).toLocaleString() : 0}</div>
+        </div>
+        
+        <div class="stat-card" style="border-bottom: 3px solid var(--primary);">
+           <div class="stat-label">⚡ Network TPS</div>
+           <div class="stat-value" style="color: var(--primary);">
+              ${s.tps ? Number(s.tps).toFixed(2) : '0.00'} 
+              <span style="font-size: 13px; font-weight: normal; color: var(--text-muted);">tx/s</span>
+           </div>
+        </div>
+
+        <div class="stat-card">
+           <div class="stat-label">🛡️ Validators</div>
+           <div class="stat-value">
+              ${Number(valCount).toLocaleString()}
+              <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.1); color: var(--success); margin-left: 6px; vertical-align: middle;">Active</span>
+           </div>
+        </div>
+
+        <div class="stat-card">
+           <div class="stat-label">⏳ Pending TX</div>
+           <div class="stat-value">${s.pending_txs ? Number(s.pending_txs).toLocaleString() : 0}</div>
+        </div>
+        
+        <div class="stat-card">
+           <div class="stat-label">🪙 Token Mints</div>
+           <div class="stat-value">${s.token_mints ? Number(s.token_mints).toLocaleString() : 0}</div>
+        </div>
+      `;
+
+      const modules = [['Premium','/premium/features'],['Ecosystem','/ecosystem/features'],['Advanced','/advanced/features']];
+      $('moduleBoxes').innerHTML = modules.map(([name,path]) => `
+        <button class="btn secondary" style="width:100%; text-align:left; display:flex; justify-content:space-between;" onclick="loadEndpoint('${path}')">
+          <span>${name}</span> <span>→</span>
+        </button>
+      `).join('');
+
+      await loadRecentHistory(s.latest_height || 0);
+    } catch(e) {
+      updateStatus(false, 'RPC Offline');
+    }
+  }
+
+  function init() {
+    $('rpcInput').value = inferRpc();
+    $('saveRpcBtn').onclick = () => { localStorage.setItem('anoroExplorerRPC', apiBase()); loadDashboard(); };
+    loadDashboard();
+  }
+
+  function switchTab(tabName) {
+    $('viewDashboard').style.display = 'none';
+    $('viewRichlist').style.display = 'none';
+    
+    $('tabDashboard').className = 'btn secondary';
+    $('tabRichList').className = 'btn secondary';
+
+    if(tabName === 'dashboard') {
+      $('viewDashboard').style.display = 'block';
+      $('tabDashboard').className = 'btn';
+      renderChart(); 
+    } else if(tabName === 'richlist') {
+      $('viewRichlist').style.display = 'block';
+      $('tabRichList').className = 'btn';
+      loadRichList();
+    }
+  }
+
+  let myChart = null;
+  async function renderChart() {
+    try {
+      const labels = ["19 May", "20 May", "21 May", "22 May", "23 May", "24 May", "25 May"];
+      const dataPoints = [1200, 1900, 1500, 2200, 3100, 2800, 3500];
+
+      const ctx = document.getElementById('txChart').getContext('2d');
+      if(myChart) myChart.destroy(); 
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Transaksi',
+            data: dataPoints,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: textColor }, grid: { color: isDark ? '#334155' : '#e2e8f0' } },
+            x: { ticks: { color: textColor }, grid: { display: false } }
+          }
+        }
+      });
+    } catch(e) { console.error("Gagal memuat chart", e); }
+  }
+
+  async function loadRichList() {
+    $('richListOutput').innerHTML = "Mengambil data ledger blockchain...";
+    try {
+      const data = await api('/richlist');
+      const mockData = [
+        { rank: 1, address: "anr1genesis...88x", balance: "50,000,000 ANR", percentage: "50%" },
+        { rank: 2, address: "anr1treasury...p9", balance: "20,000,000 ANR", percentage: "20%" },
+        { rank: 3, address: "anr1exchange...k2", balance: "5,000,000 ANR", percentage: "5%" }
+      ];
+
+      let html = `<table style="width:100%; text-align:left; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                      <th style="padding:10px;">Rank</th><th>Address</th><th>Balance</th><th>% Supply</th>
+                    </tr>`;
+      
+      mockData.forEach(item => {
+        html += `<tr style="border-bottom: 1px solid var(--border-color);">
+                   <td style="padding:12px;">#${item.rank}</td>
+                   <td style="color:var(--primary); font-family:monospace; cursor:pointer;" onclick="loadEndpoint('/balance?address=${item.address}')">${item.address}</td>
+                   <td><b>${item.balance}</b></td>
+                   <td>${item.percentage}</td>
+                 </tr>`;
+      });
+      html += `</table>`;
+      
+      $('richListOutput').innerHTML = html;
+    } catch(e) {
+      $('richListOutput').innerHTML = "Gagal memuat data dari server. Error: " + e.message;
+    }
+  }
+
+  async function claimFaucet() {
+    const address = $('faucetInput').value.trim();
+    const statusDiv = $('faucetStatus');
+    
+    if(!address.startsWith('anr')) {
+      statusDiv.style.color = 'var(--error)';
+      statusDiv.innerText = "Alamat tidak valid! Harus diawali dengan 'anr'";
+      return;
+    }
+
+    statusDiv.style.color = 'var(--text-main)';
+    statusDiv.innerText = "⏳ Sedang memproses transaksi on-chain...";
+
+    try {
+      const url = apiBase() + '/faucet';
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: address })
+      });
+      
+      if(res.ok) {
+        statusDiv.style.color = 'var(--success)';
+        statusDiv.innerText = "✅ Sukses! 10 ANR telah dikirim ke dompet Anda.";
+      } else {
+        const err = await res.text();
+        statusDiv.style.color = 'var(--error)';
+        statusDiv.innerText = "❌ Gagal: " + err;
+      }
+    } catch(e) {
+      statusDiv.style.color = 'var(--error)';
+      statusDiv.innerText = "❌ Error menghubungkan ke RPC / Node.";
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => { renderChart(); });
+  window.onload = init;
+</script>
+</body>
+</html>
