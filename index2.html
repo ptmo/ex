@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f8fafc" id="metaThemeColor" />
+  <meta name="description" content="Anoro Wallet Pro, encrypted local web wallet for Anoro public testnet." />
+  <title>Anoro Wallet Pro</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/anoro-icon.svg" type="image/svg+xml" />
+
+  <style>
+    /* =========================================================
+       PREMIUM DUAL-MODE VARIABLES (Industry Standard)
+       ========================================================= */
+    :root {
+      /* LIGHT MODE (Default) - Clean, Soft, Professional */
+      --bg-main: #f4f7f9;
+      --bg-surface: rgba(255, 255, 255, 0.85);
+      --bg-input: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: rgba(15, 23, 42, 0.08);
+      --border-focus: rgba(2, 132, 199, 0.3);
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-soft: rgba(2, 132, 199, 0.08);
+      --success: #10b981;
+      --success-soft: rgba(16, 185, 129, 0.1);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.1);
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.1);
+      
+      --shadow-glass: 0 10px 30px -10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      --shadow-btn: 0 4px 12px rgba(2, 132, 199, 0.2);
+      
+      --aurora-1: rgba(2, 132, 199, 0.12);
+      --aurora-2: rgba(16, 185, 129, 0.08);
+      --console-bg: #1e293b;
+      --console-text: #e2e8f0;
+      
+      --r14: 12px;
+      --r18: 16px;
+      --r24: 20px;
+      --r32: 24px;
+    }
+
+    [data-theme="dark"] {
+      /* DARK MODE - Deep, Neon-subtle, Elegant */
+      --bg-main: #050b12;
+      --bg-surface: rgba(13, 29, 42, 0.75);
+      --bg-input: rgba(5, 16, 24, 0.70);
+      --text-main: #effcff;
+      --text-muted: #91abba;
+      --border-color: rgba(135, 221, 255, 0.15);
+      --border-focus: rgba(88, 219, 255, 0.5);
+      --primary: #38bdf8;
+      --primary-hover: #7dd3fc;
+      --primary-soft: rgba(56, 189, 248, 0.1);
+      --success: #34d399;
+      --success-soft: rgba(52, 211, 153, 0.1);
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.1);
+      --warning: #fbbf24;
+      --warning-soft: rgba(251, 191, 36, 0.1);
+      
+      --shadow-glass: 0 24px 80px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      --shadow-btn: 0 8px 24px rgba(56, 189, 248, 0.2);
+      
+      --aurora-1: rgba(56, 189, 248, 0.15);
+      --aurora-2: rgba(251, 113, 133, 0.12);
+      --console-bg: rgba(5, 16, 24, 0.8);
+      --console-text: #c8eefc;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    
+    body {
+      min-height: 100vh; margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    /* Subdued Background Pattern */
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+      background-size: 42px 42px; opacity: 0.3;
+      mask-image: radial-gradient(circle at 50% 25%, black, transparent 78%);
+      -webkit-mask-image: radial-gradient(circle at 50% 25%, black, transparent 78%);
+      transition: opacity 0.4s ease;
+    }
+
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: var(--primary); text-decoration: none; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(22px, 2.5vw, 34px); letter-spacing: -0.04em; font-weight: 800; }
+    h2 { font-size: clamp(20px, 2.2vw, 28px); letter-spacing: -0.03em; font-weight: 700; }
+    h3 { font-size: 16px; letter-spacing: -0.02em; font-weight: 600; }
+    p { color: var(--text-muted); line-height: 1.6; }
+    code { color: var(--primary); font-family: ui-monospace, monospace; font-size: 0.9em; background: var(--primary-soft); padding: 2px 6px; border-radius: 4px; }
+
+    /* Animated Aurora */
+    .aurora {
+      position: fixed; width: 40vw; height: 40vw; min-width: 300px; min-height: 300px;
+      border-radius: 50%; filter: blur(60px); pointer-events: none;
+      animation: drift 15s ease-in-out infinite alternate;
+      transition: background 0.4s ease; z-index: -1;
+    }
+    .aurora-one { left: -10vw; top: -10vw; background: var(--aurora-1); }
+    .aurora-two { right: -10vw; top: 20vh; background: var(--aurora-2); animation-delay: -5s; }
+    @keyframes drift { 
+      0% { transform: translate3d(0,0,0) scale(1); } 
+      100% { transform: translate3d(4vw, 6vh, 0) scale(1.1); } 
+    }
+
+    /* Layout & Glass Panels */
+    .app-shell {
+      position: relative; width: min(1180px, calc(100% - 32px));
+      margin: 0 auto; padding: 24px 0 48px;
+    }
+
+    .glass {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--r24);
+      box-shadow: var(--shadow-glass);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* Topbar */
+    .topbar {
+      min-height: 80px; padding: 16px 20px; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .brand-wrap, .mini-profile, .top-pills, .feature-row, .quick-actions { display: flex; align-items: center; }
+    .brand-wrap { gap: 14px; }
+    
+    .brand-orb {
+      width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center;
+      color: #fff; font-weight: 800; letter-spacing: -0.04em; font-size: 15px;
+      background: linear-gradient(135deg, var(--primary), var(--success));
+      box-shadow: var(--shadow-btn);
+    }
+    .brand-orb.small { width: 44px; height: 44px; border-radius: 12px; font-size: 13px; }
+    
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.12em; color: var(--primary); font-size: 11px; font-weight: 800; margin-bottom: 4px; }
+    .lead { font-size: 15px; max-width: 60ch; margin-top: 8px; }
+    
+    .top-pills { gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .pill {
+      display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px;
+      border: 1px solid var(--border-color); border-radius: 999px;
+      font-size: 12px; font-weight: 700; transition: all 0.2s;
+    }
+    .pill.muted { color: var(--text-muted); background: var(--bg-main); }
+    .pill.danger { color: var(--danger); background: var(--danger-soft); border-color: transparent; }
+    .pill.ok { color: var(--success); background: var(--success-soft); border-color: transparent; }
+
+    .view { margin-bottom: 24px; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .hidden { display: none !important; }
+
+    /* Auth Layout */
+    .auth-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: stretch; }
+    .hero-panel, .form-card, .backup-view, .tab-panel, .console-card, .sidebar { padding: 24px; }
+    
+    .hero-panel { display: flex; flex-direction: column; justify-content: center; overflow: hidden; position: relative; }
+    .hero-panel.compact { min-height: 280px; }
+    
+    .section-title { display: grid; gap: 4px; margin-bottom: 20px; }
+    .section-title.center { text-align: center; justify-items: center; }
+
+    /* Info Boxes */
+    .warning-box, .danger-panel, .soft-card {
+      padding: 16px; border-radius: var(--r14); border: 1px solid var(--border-color); background: var(--bg-main);
+    }
+    .warning-box.hard { border-color: rgba(245, 158, 11, 0.3); background: var(--warning-soft); }
+    .warning-box strong { display: block; color: var(--warning); margin-bottom: 6px; }
+    .danger-panel { border-color: rgba(239, 68, 68, 0.3); background: var(--danger-soft); color: var(--danger); line-height: 1.5; margin-bottom: 20px; font-weight: 500; }
+    
+    .feature-row { flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .feature-row span {
+      padding: 6px 12px; border-radius: 999px; color: var(--primary);
+      background: var(--primary-soft); font-size: 12px; font-weight: 700;
+    }
+
+    /* Forms */
+    label { display: block; margin: 16px 0 8px; color: var(--text-main); font-size: 13px; font-weight: 600; }
+    input, textarea {
+      width: 100%; min-height: 48px; color: var(--text-main);
+      background: var(--bg-input); border: 1px solid var(--border-color);
+      border-radius: var(--r14); outline: none; padding: 12px 16px;
+      transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    textarea { min-height: 120px; resize: vertical; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.5; }
+    input:focus, textarea:focus {
+      border-color: var(--primary); background: var(--bg-surface);
+      box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+    
+    .checkline { display: flex; gap: 12px; align-items: flex-start; color: var(--text-muted); line-height: 1.5; cursor: pointer; }
+    .checkline input { width: 18px; min-height: 18px; margin-top: 2px; flex: 0 0 18px; accent-color: var(--primary); cursor: pointer; }
+
+    /* Buttons */
+    .btn, .icon-btn {
+      min-height: 48px; border: 1px solid var(--border-color); border-radius: var(--r14);
+      color: var(--text-main); background: var(--bg-main); font-weight: 600; font-size: 14px;
+      transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .btn:hover, .icon-btn:hover { transform: translateY(-1px); border-color: var(--text-muted); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .btn:active, .icon-btn:active { transform: translateY(0); filter: brightness(0.96); }
+    
+    .btn.primary {
+      width: 100%; margin-top: 16px; color: #fff; border: none;
+      background: var(--primary); box-shadow: var(--shadow-btn);
+    }
+    .btn.primary:hover { background: var(--primary-hover); }
+    .btn.ghost { width: 100%; background: transparent; }
+    .btn.ghost:hover { background: var(--bg-main); }
+    .btn.danger-outline {
+      width: 100%; margin-top: 16px; color: var(--danger);
+      border-color: var(--danger-soft); background: var(--danger-soft);
+    }
+    .icon-btn { width: 90px; flex: 0 0 90px; color: #fff; background: var(--primary); border: none; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    .gap-top { margin-top: 16px; }
+    .copy-row { display: flex; align-items: center; gap: 12px; }
+    
+    .import-box { margin-top: 24px; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--r14); background: var(--bg-main); }
+    .import-box summary { cursor: pointer; color: var(--primary); font-weight: 700; margin-bottom: 10px; }
+    .backup-view { max-width: 800px; margin-inline: auto; }
+
+    /* Dashboard & Tabs */
+    .dashboard { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; align-items: start; }
+    .sidebar { position: sticky; top: 24px; }
+    .mini-profile { gap: 14px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+    .mini-profile strong { color: var(--text-main); font-size: 15px; display: block; margin-bottom: 2px;}
+    .mini-profile p { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-muted); }
+    
+    .tabs { display: grid; gap: 8px; }
+    .tab {
+      min-height: 44px; border-radius: 10px; border: 1px solid transparent;
+      color: var(--text-muted); background: transparent; text-align: left;
+      padding: 0 16px; font-weight: 600; font-size: 14px; transition: all 0.2s; cursor: pointer;
+    }
+    .tab:hover { background: var(--bg-main); color: var(--text-main); }
+    .tab.active { color: #fff; background: var(--primary); box-shadow: var(--shadow-btn); }
+    
+    .content-stack { display: grid; gap: 24px; }
+    .tab-panel { animation: lift 0.3s ease-out both; }
+    @keyframes lift { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Wallet Hero & Metrics */
+    .wallet-hero {
+      min-height: 180px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+      padding: 24px; border-radius: var(--r24); border: 1px solid var(--border-color); margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--primary-soft), transparent 60%), var(--bg-main);
+    }
+    .wallet-hero h2 { font-size: clamp(32px, 4vw, 48px); color: var(--text-main); margin: 4px 0 8px; }
+    .hero-actions { width: min(280px, 100%); display: grid; gap: 10px; }
+    
+    .mono, .address-line { font-family: ui-monospace, monospace; word-break: break-all; }
+    .address-line { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+    .address-line.small { text-align: center; }
+    
+    .metric-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .metric-card {
+      min-height: 110px; padding: 18px; border-radius: var(--r18);
+      background: var(--bg-main); border: 1px solid var(--border-color);
+      transition: transform 0.2s;
+    }
+    .metric-card:hover { transform: translateY(-2px); border-color: var(--primary-soft); }
+    .metric-card span { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .metric-card strong { display: block; font-size: clamp(20px, 2vw, 24px); font-weight: 700; color: var(--text-main); }
+    
+    .quick-actions { gap: 12px; margin-top: 20px; display: flex; }
+    .quick-actions > * { flex: 1; margin-top: 0 !important; }
+
+    /* Misc Inner Components */
+    .fee-line {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; margin-top: 16px; border-radius: var(--r14);
+      border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-muted); font-size: 14px;
+    }
+    .fee-line strong { color: var(--text-main); font-weight: 700; }
+
+    .qr-card {
+      width: min(400px, 100%); margin: 0 auto; display: grid; justify-items: center; gap: 20px;
+      padding: 24px; border-radius: var(--r24); border: 1px solid var(--border-color); background: var(--bg-main);
+    }
+    #receiveQr { width: min(280px, 70vw); height: min(280px, 70vw); border-radius: 16px; padding: 12px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+
+    .scanner { margin-top: 16px; padding: 16px; border-radius: var(--r18); border: 1px solid var(--border-color); background: var(--bg-main); }
+    #scanVideo { width: 100%; max-height: 400px; border-radius: 12px; background: #000; aspect-ratio: 16/10; object-fit: cover; }
+    #scanStatus { margin-top: 12px; font-size: 13px; text-align: center; }
+
+    .history-list { display: grid; gap: 12px; }
+    .history-item { padding: 16px; border-radius: var(--r14); border: 1px solid var(--border-color); background: var(--bg-main); }
+    .history-item strong { display: block; margin-bottom: 6px; color: var(--text-main); }
+    .history-item p { font-size: 13px; word-break: break-all; color: var(--text-muted); margin: 0; }
+
+    /* Developer Console */
+    .console-card { padding: 0; overflow: hidden; background: var(--console-bg); border-color: transparent; }
+    .console-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .console-head button { border: 0; border-radius: 6px; color: #94a3b8; background: rgba(255,255,255,0.1); padding: 6px 12px; font-size: 12px; transition: background 0.2s; }
+    .console-head button:hover { background: rgba(255,255,255,0.2); color: #fff;}
+    pre#out {
+      min-height: 120px; max-height: 300px; overflow: auto; margin: 0; padding: 20px;
+      white-space: pre-wrap; word-break: break-word; color: var(--console-text);
+      font-size: 13px; line-height: 1.6; font-family: ui-monospace, monospace;
+    }
+
+    /* Media Queries for Responsiveness */
+    @media (max-width: 900px) {
+      .auth-layout { grid-template-columns: 1fr; gap: 16px; }
+      .dashboard { grid-template-columns: 1fr; }
+      .sidebar { position: static; padding-bottom: 8px; }
+      .tabs { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+      .tab { text-align: center; padding: 0 10px; }
+      .wallet-hero { align-items: flex-start; flex-direction: column; }
+      .hero-actions { width: 100%; grid-template-columns: repeat(2, 1fr); }
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .quick-actions { flex-direction: column; }
+    }
+
+    @media (max-width: 620px) {
+      .app-shell { width: 100%; padding: 12px; }
+      .topbar, .hero-panel, .form-card, .backup-view, .tab-panel, .sidebar { padding: 20px; border-radius: 20px; }
+      .brand-orb { width: 44px; height: 44px; border-radius: 12px; font-size: 13px; }
+      h1 { font-size: 24px; } h2 { font-size: 20px; }
+      .grid-2, .metric-grid, .hero-actions { grid-template-columns: 1fr; }
+      .tabs { display: flex; overflow-x: auto; padding-bottom: 8px; margin-inline: -4px; }
+      .tab { flex: 0 0 auto; min-width: 100px; }
+      .copy-row { align-items: stretch; flex-direction: column; }
+      .icon-btn { width: 100%; flex-basis: auto; }
+      .wallet-hero h2 { font-size: 32px; }
+      .top-pills { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="aurora aurora-one"></div>
+  <div class="aurora aurora-two"></div>
+
+  <main class="app-shell">
+    
+    <header class="topbar glass">
+      <div class="brand-wrap">
+        <div class="brand-orb" aria-hidden="true">ANR</div>
+        <div>
+          <p class="eyebrow">Anoro Public Testnet</p>
+          <h1>Anoro Wallet Pro</h1>
+        </div>
+      </div>
+      <div class="top-pills">
+        <button id="themeToggleBtn" class="pill" style="cursor: pointer; background: var(--bg-surface);">🌞 Light</button>
+        <span id="networkPill" class="pill muted">Network idle</span>
+        <span id="lockPill" class="pill danger">Locked</span>
+      </div>
+    </header>
+
+    <section id="onboardingView" class="auth-layout view hidden">
+      <article class="hero-panel glass">
+        <div>
+          <p class="eyebrow">Encrypted Local Vault</p>
+          <h2>Wallet lokal dengan keamanan kelas industri.</h2>
+          <p class="lead">Alamat dan private key dibuat murni di dalam browser Anda. Data dienkripsi standar tinggi dan hanya disimpan di localStorage. Tidak ada data yang dikirim ke server.</p>
+        </div>
+        <div class="warning-box hard" style="margin-top: auto;">
+          <strong>PERINGATAN KEAMANAN</strong>
+          <p>Simpan recovery package dengan baik. Jika private key hilang atau password lupa, developer tidak bisa memulihkan dana Anda.</p>
+        </div>
+        <div class="feature-row">
+          <span>Local Ed25519 Signing</span>
+          <span>Zero-Knowledge</span>
+          <span>QR Scanner</span>
+        </div>
+      </article>
+
+      <article class="glass form-card">
+        <div class="section-title">
+          <h2>Buat Wallet Baru</h2>
+          <p>Setup koneksi RPC dan lindungi wallet dengan password.</p>
+        </div>
+
+        <label for="setupRpc">RPC Node URL</label>
+        <input id="setupRpc" value="http://127.0.0.1:8545" autocomplete="off" spellcheck="false" />
+
+        <div class="grid-2">
+          <div>
+            <label for="createPassword">Password Enkripsi</label>
+            <input id="createPassword" type="password" placeholder="Minimal 8 karakter" autocomplete="new-password" />
+          </div>
+          <div>
+            <label for="createPassword2">Konfirmasi Password</label>
+            <input id="createPassword2" type="password" placeholder="Ulangi password" autocomplete="new-password" />
+          </div>
+        </div>
+
+        <label class="checkline" style="margin-top: 16px;">
+          <input id="backupAgreement" type="checkbox" />
+          <span>Saya paham private key adalah tanggung jawab saya sepenuhnya dan tidak boleh dibagikan ke siapapun.</span>
+        </label>
+
+        <button id="createWalletBtn" class="btn primary">Buat Wallet Sekarang</button>
+
+        <details class="import-box">
+          <summary>Sudah punya wallet? Import Recovery Package</summary>
+          <textarea id="importRecovery" placeholder='Tempel (Paste) JSON recovery package di sini...'></textarea>
+          <button id="importWalletBtn" class="btn ghost gap-top">Import Wallet</button>
+        </details>
+      </article>
+    </section>
+
+    <section id="backupView" class="view glass backup-view hidden">
+      <div class="section-title center">
+        <p class="eyebrow">Fase Backup Terakhir</p>
+        <h2>Amankan Private Key Anda</h2>
+        <p>Halaman ini hanya muncul sekali. Setelah masuk dashboard, raw private key akan dienkripsi permanen.</p>
+      </div>
+
+      <div class="danger-panel">
+        🛡️ JANGAN simpan file ini di cloud publik (G-Drive, Dropbox). JANGAN kirim via chat. Simpan di flashdisk atau print di kertas untuk cold-storage maksimal.
+      </div>
+
+      <label for="backupAddress">Alamat Publik (Address)</label>
+      <div class="copy-row">
+        <input id="backupAddress" readonly />
+        <button id="copyBackupAddress" class="icon-btn">Copy</button>
+      </div>
+
+      <label for="backupSecret">Recovery Package JSON</label>
+      <textarea id="backupSecret" readonly></textarea>
+
+      <div class="grid-2 gap-top">
+        <button id="copyBackupSecret" class="btn ghost">Salin Secret</button>
+        <button id="downloadBackupSecret" class="btn ghost">Download .json</button>
+      </div>
+
+      <label class="checkline" style="margin-top: 24px;">
+        <input id="savedSecretCheck" type="checkbox" />
+        <span>Saya telah mem-backup file di atas di tempat yang sangat aman.</span>
+      </label>
+      <button id="enterDashboardBtn" class="btn primary">Masuk ke Dashboard</button>
+    </section>
+
+    <section id="loginView" class="view auth-layout hidden">
+      <article class="hero-panel glass compact">
+        <p class="eyebrow">Vault Terkunci</p>
+        <h2>Selamat Datang Kembali</h2>
+        <p id="loginAddressPreview" class="lead" style="font-family: monospace; font-size: 13px; color: var(--primary);">Vault ditemukan. Masukkan password untuk dekripsi wallet lokal.</p>
+      </article>
+
+      <article class="glass form-card" style="display: flex; flex-direction: column; justify-content: center;">
+        <label for="unlockPassword">Password Wallet</label>
+        <input id="unlockPassword" type="password" placeholder="Masukkan password untuk membuka" autocomplete="current-password" />
+        <button id="unlockBtn" class="btn primary">Buka Wallet</button>
+        <button id="resetFromLoginBtn" class="btn danger-outline" style="margin-top: 32px;">Hapus Data Lokal & Reset</button>
+      </article>
+    </section>
+
+    <section id="dashboardView" class="dashboard view hidden">
+      <aside class="sidebar glass">
+        <div class="mini-profile">
+          <div class="brand-orb small">ANR</div>
+          <div>
+            <strong>Anoro Wallet</strong>
+            <p id="sideAddress" title="Alamat Publik">-</p>
+          </div>
+        </div>
+
+        <nav class="tabs" aria-label="Wallet navigation">
+          <button data-tab="portfolio" class="tab active">Portfolio</button>
+          <button data-tab="send" class="tab">Kirim Koin</button>
+          <button data-tab="receive" class="tab">Terima Koin</button>
+          <button data-tab="staking" class="tab">Staking & Node</button>
+          <button data-tab="activity" class="tab">Riwayat Lokal</button>
+          <button data-tab="tools" class="tab">Dev Tools</button>
+          <button data-tab="settings" class="tab">Pengaturan</button>
+        </nav>
+      </aside>
+
+      <div class="content-stack">
+        
+        <section id="portfolioTab" class="tab-panel glass">
+          <div class="wallet-hero">
+            <div>
+              <p class="eyebrow">Total Saldo (Portfolio)</p>
+              <h2 id="balanceText">0 ANR</h2>
+              <p id="walletAddress" class="mono address-line">-</p>
+            </div>
+            <div class="hero-actions">
+              <button id="copyAddressBtn" class="btn ghost">Copy Address</button>
+              <button id="refreshBtn" class="btn ghost">Refresh Data</button>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric-card"><span>Liquid Balance</span><strong id="balanceMini">0 ANR</strong></div>
+            <div class="metric-card"><span>Staked Assets</span><strong id="stakeText">0 ANR</strong></div>
+            <div class="metric-card"><span>Account Nonce</span><strong id="nonceText">0</strong></div>
+            <div class="metric-card"><span>Latest Block</span><strong id="heightText">0</strong></div>
+            <div class="metric-card"><span>Mempool Status</span><strong id="mempoolText">0 tx</strong></div>
+            <div class="metric-card"><span>Active Validators</span><strong id="validatorText">0</strong></div>
+          </div>
+
+          <div class="quick-actions">
+            <button id="faucetBtn" class="btn primary">Minta Faucet (10 ANR)</button>
+            <button id="openReceiveBtn" class="btn ghost">Tampilkan QR</button>
+            <button id="openSendBtn" class="btn ghost">Kirim Dana</button>
+          </div>
+        </section>
+
+        <section id="sendTab" class="tab-panel glass hidden">
+          <div class="section-title">
+            <p class="eyebrow">Local Signing</p>
+            <h2>Kirim Koin ANR</h2>
+            <p>Transaksi ditandatangani sepenuhnya di browser Anda. Private key tidak pernah meninggalkan perangkat.</p>
+          </div>
+
+          <label for="sendTo">Alamat Penerima</label>
+          <div class="copy-row">
+            <input id="sendTo" placeholder="anr1..." autocomplete="off" spellcheck="false" />
+            <button id="scanQrBtn" class="icon-btn">Scan QR</button>
+          </div>
+
+          <label for="sendAmount">Jumlah Transfer (ANR)</label>
+          <div class="copy-row">
+            <input id="sendAmount" placeholder="0.00" inputmode="decimal" autocomplete="off" />
+            <button id="maxBtn" class="icon-btn">Max</button>
+          </div>
+
+          <div class="fee-line">
+            <span>Estimasi Biaya Gas (Network Fee)</span>
+            <strong id="feeText">0.000021 ANR</strong>
+          </div>
+          <button id="sendBtn" class="btn primary">Tandatangani & Kirim Transaksi</button>
+
+          <div id="scannerPanel" class="scanner hidden">
+            <video id="scanVideo" playsinline></video>
+            <div class="grid-2 gap-top">
+              <button id="stopScanBtn" class="btn danger-outline" style="margin-top:0;">Tutup Kamera</button>
+              <button id="pasteQrBtn" class="btn ghost">Paste Teks QR</button>
+            </div>
+            <p id="scanStatus">Arahkan kamera ke QR Code Anoro.</p>
+          </div>
+        </section>
+
+        <section id="receiveTab" class="tab-panel glass hidden">
+          <div class="section-title center">
+            <p class="eyebrow">Deposit Address</p>
+            <h2>Terima Dana</h2>
+            <p>Berikan QR code atau alamat ini kepada pengirim.</p>
+          </div>
+          <div class="qr-card">
+            <img id="receiveQr" alt="Anoro receive QR" />
+            <div class="mono address-line small" id="receiveAddress" style="font-weight: 600;">-</div>
+          </div>
+          <div class="grid-2 gap-top" style="max-width: 400px; margin: 16px auto 0;">
+            <button id="copyReceiveBtn" class="btn primary" style="margin-top:0;">Copy Alamat</button>
+            <button id="shareReceiveBtn" class="btn ghost">Share Link</button>
+          </div>
+        </section>
+
+        <section id="stakingTab" class="tab-panel glass hidden">
+          <div class="section-title">
+            <p class="eyebrow">Proof of Stake</p>
+            <h2>Delegasi & Staking</h2>
+            <p>Amankan jaringan dan dapatkan reward dengan melakukan staking koin ANR Anda ke validator.</p>
+          </div>
+          <div class="grid-2">
+            <div class="soft-card">
+              <h3>Stake (Lock)</h3>
+              <label for="stakeAmount">Jumlah ANR</label>
+              <input id="stakeAmount" placeholder="100.00" inputmode="decimal" />
+              <button id="stakeBtn" class="btn primary">Stake Sekarang</button>
+            </div>
+            <div class="soft-card">
+              <h3>Unstake (Withdraw)</h3>
+              <label for="unstakeAmount">Jumlah ANR</label>
+              <input id="unstakeAmount" placeholder="50.00" inputmode="decimal" />
+              <button id="unstakeBtn" class="btn ghost">Unstake</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="activityTab" class="tab-panel glass hidden">
+          <div class="section-title">
+            <p class="eyebrow">History</p>
+            <h2>Riwayat Aktivitas Lokal</h2>
+            <p>Aktivitas yang terekam secara lokal di browser ini. Gunakan Block Explorer untuk data on-chain lengkap.</p>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section id="toolsTab" class="tab-panel glass hidden">
+          <div class="section-title">
+            <p class="eyebrow">Developer & RPC</p>
+            <h2>Network Tools</h2>
+            <p>Akses cepat untuk melakukan query langsung ke node RPC Anoro.</p>
+          </div>
+          <div class="grid-2">
+            <button id="healthBtn" class="btn ghost">Check Node Health</button>
+            <button id="featuresBtn" class="btn ghost">List Premium Modules</button>
+            <button id="latestBlockBtn" class="btn ghost">Fetch Latest Block</button>
+            <button id="mempoolBtn" class="btn ghost">Inspect Mempool</button>
+          </div>
+          <label for="txHashInput" style="margin-top:24px;">Cari Status Transaksi (Hash)</label>
+          <div class="copy-row">
+            <input id="txHashInput" placeholder="0x..." spellcheck="false" />
+            <button id="lookupTxBtn" class="icon-btn">Cari</button>
+          </div>
+        </section>
+
+        <section id="settingsTab" class="tab-panel glass hidden">
+          <div class="section-title">
+            <p class="eyebrow">Configuration</p>
+            <h2>Pengaturan Wallet</h2>
+            <p>Modifikasi koneksi jaringan atau atur ulang vault penyimpanan Anda.</p>
+          </div>
+          <label for="rpcInput">Custom RPC Provider URL</label>
+          <input id="rpcInput" value="http://127.0.0.1:8545" autocomplete="off" spellcheck="false" />
+          
+          <div class="grid-2 gap-top">
+            <button id="saveRpcBtn" class="btn primary" style="margin-top:0;">Simpan RPC</button>
+            <button id="testRpcBtn" class="btn ghost">Test Koneksi</button>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 32px 0;" />
+          
+          <h3>Keamanan Perangkat</h3>
+          <div class="grid-2 gap-top">
+            <button id="lockBtn" class="btn ghost">Kunci Wallet Sekarang</button>
+            <button id="exportVaultBtn" class="btn ghost">Backup Ulang Vault</button>
+          </div>
+          
+          <div class="danger-panel" style="margin-top: 24px;">
+            Hati-hati! Menghapus dompet lokal akan melenyapkan private key dari browser ini secara permanen. Pastikan Anda sudah memegang backup (Recovery JSON).
+          </div>
+          <button id="deleteWalletBtn" class="btn danger-outline" style="margin-top:0;">Hapus Wallet Dari Browser Ini</button>
+        </section>
+
+      </div>
+    </section>
+
+    <section class="console-card glass">
+      <div class="console-head">
+        <span>System Terminal</span>
+        <button id="clearOutBtn">Clear Log</button>
+      </div>
+      <pre id="out">Ready. Menunggu instruksi node...</pre>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const htmlElement = document.documentElement;
+      const metaThemeColor = document.getElementById('metaThemeColor');
+
+      // Check Saved Theme or Default to Light
+      const savedTheme = localStorage.getItem('anoroWalletTheme') || 'light';
+      applyTheme(savedTheme);
+
+      themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = htmlElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        applyTheme(newTheme);
+      });
+
+      function applyTheme(theme) {
+        htmlElement.setAttribute('data-theme', theme);
+        localStorage.setItem('anoroWalletTheme', theme);
+        
+        if (theme === 'light') {
+          themeToggleBtn.innerHTML = '🌙 Dark';
+          metaThemeColor.setAttribute('content', '#f8fafc');
+        } else {
+          themeToggleBtn.innerHTML = '☀️ Light';
+          metaThemeColor.setAttribute('content', '#050b12');
+        }
+      }
+    });
+  </script>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
