@@ -2,43 +2,65 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Aprost PoS Faucet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprost Faucet | Premium PoS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #1e293b; padding: 40px; border-radius: 12px; text-align: center; border: 1px solid #334155; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { margin: 0 0 5px 0; color: #38bdf8; }
-        input { width: 100%; padding: 15px; margin: 20px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-family: monospace; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #475569; cursor: not-allowed; }
-        .alert { margin-top: 15px; font-size: 14px; padding: 12px; border-radius: 8px; display: none; word-wrap: break-word; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center p-4">
 
-<div class="card">
-    <h2>💧 Aprost Faucet</h2>
-    <p style="color: #94a3b8; font-size: 14px; margin-top: 0;">Jaringan PoS: <b>1 ARS / 24 Jam</b></p>
-    
-    <input type="text" id="address" placeholder="Masukkan alamat (0x...)">
-    <button id="btn" onclick="claim()">Klaim 1 ARS</button>
-    <div id="msg" class="alert"></div>
-</div>
+    <div class="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 p-8 rounded-3xl shadow-2xl">
+        
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-white mb-2">💧 Aprost Faucet</h2>
+            <p class="text-slate-400 text-sm">Jaringan PoS: Dapatkan 1 ARS / 24 Jam</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Wallet Address</label>
+                <input type="text" id="address" 
+                    placeholder="0x..." 
+                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 font-mono text-sm"
+                >
+            </div>
+
+            <button id="btn" onclick="claim()" 
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform active:scale-95 shadow-lg shadow-blue-900/20">
+                Klaim 1 ARS
+            </button>
+        </div>
+
+        <div id="msg" class="mt-6 p-4 rounded-xl text-sm hidden border border-transparent backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+        </div>
+
+        <div class="mt-8 text-center">
+            <p class="text-[10px] text-slate-600">Terintegrasi dengan Prysm Validations</p>
+        </div>
+    </div>
 
 <script>
-    // MASUKKAN PRIVATE KEY BRANKAS FAUCET ANDA DI BAWAH INI
-    const PK = "PRIVATE_KEY_FAUCET_ANDA_TANPA_0X"; 
-    
-    const REWARD = "1.0"; // Persis 1 Koin
+    // Peringatan: Pindahkan logika ini ke Backend (Node.js/Express) untuk produksi!
+    const PK = "PRIVATE_KEY_ANDA_DISINI"; 
+    const REWARD = "1.0"; 
     const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
     const wallet = new ethers.Wallet(PK, provider);
 
-    function showMsg(text, bgColor) {
+    function showMsg(text, type) {
         const msgBox = document.getElementById('msg');
         msgBox.innerHTML = text;
-        msgBox.style.background = bgColor;
         msgBox.style.display = "block";
+        
+        // Styling berdasarkan tipe
+        if (type === 'success') {
+            msgBox.className = "mt-6 p-4 rounded-xl text-sm border bg-emerald-900/20 border-emerald-500/30 text-emerald-400";
+        } else {
+            msgBox.className = "mt-6 p-4 rounded-xl text-sm border bg-red-900/20 border-red-500/30 text-red-400";
+        }
     }
 
     async function claim() {
@@ -46,30 +68,31 @@
         const btn = document.getElementById('btn');
 
         if (!ethers.utils.isAddress(addr)) {
-            return showMsg("❌ Alamat tidak valid!", "#7f1d1d");
+            return showMsg("❌ Alamat tidak valid!", "error");
         }
 
-        // Cek Cooldown 24 Jam
         const lastClaim = localStorage.getItem('claim_' + addr);
         if (lastClaim && (Date.now() - parseInt(lastClaim) < 86400000)) {
-            const sisaWaktu = Math.ceil((86400000 - (Date.now() - parseInt(lastClaim))) / 3600000);
-            return showMsg(`⏳ Tunggu <b>${sisaWaktu} jam</b> lagi untuk alamat ini!`, "#9a3412");
+            const sisa = Math.ceil((86400000 - (Date.now() - parseInt(lastClaim))) / 3600000);
+            return showMsg(`⏳ Mohon tunggu <b>${sisa} jam</b> lagi.`, "error");
         }
 
         try {
-            btn.innerText = "Memproses..."; btn.disabled = true;
-            showMsg("Mengirim transaksi...", "#1e3a8a");
+            btn.disabled = true;
+            btn.innerText = "Memproses...";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
             
             const tx = await wallet.sendTransaction({ to: addr, value: ethers.utils.parseEther(REWARD) });
-            await tx.wait(); // Tunggu divalidasi oleh Prysm
+            await tx.wait(); 
             
             localStorage.setItem('claim_' + addr, Date.now());
-            showMsg(`✅ Berhasil! 1 ARS terkirim.<br><span style="font-size:11px; font-family:monospace;">${tx.hash}</span>`, "#14532d");
+            showMsg(`✅ Sukses! <br><span class="opacity-70 text-[10px] font-mono">${tx.hash}</span>`, "success");
         } catch (e) {
-            console.error(e);
-            showMsg("❌ Gagal. Pastikan Geth berjalan dan Faucet punya saldo.", "#7f1d1d");
+            showMsg("❌ Terjadi kesalahan pada jaringan.", "error");
         } finally {
-            btn.innerText = "Klaim 1 ARS"; btn.disabled = false;
+            btn.disabled = false;
+            btn.innerText = "Klaim 1 ARS";
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
     }
 </script>
