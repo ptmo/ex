@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprost PoS Faucet</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e293b; padding: 40px; border-radius: 12px; text-align: center; border: 1px solid #334155; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { margin: 0 0 5px 0; color: #38bdf8; }
+        input { width: 100%; padding: 15px; margin: 20px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-family: monospace; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        .alert { margin-top: 15px; font-size: 14px; padding: 12px; border-radius: 8px; display: none; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>💧 Aprost Faucet</h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-top: 0;">Jaringan PoS: <b>1 ARS / 24 Jam</b></p>
+    
+    <input type="text" id="address" placeholder="Masukkan alamat (0x...)">
+    <button id="btn" onclick="claim()">Klaim 1 ARS</button>
+    <div id="msg" class="alert"></div>
+</div>
+
+<script>
+    // MASUKKAN PRIVATE KEY BRANKAS FAUCET ANDA DI BAWAH INI
+    const PK = "PRIVATE_KEY_FAUCET_ANDA_TANPA_0X"; 
+    
+    const REWARD = "1.0"; // Persis 1 Koin
+    const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
+    const wallet = new ethers.Wallet(PK, provider);
+
+    function showMsg(text, bgColor) {
+        const msgBox = document.getElementById('msg');
+        msgBox.innerHTML = text;
+        msgBox.style.background = bgColor;
+        msgBox.style.display = "block";
+    }
+
+    async function claim() {
+        const addr = document.getElementById('address').value.trim();
+        const btn = document.getElementById('btn');
+
+        if (!ethers.utils.isAddress(addr)) {
+            return showMsg("❌ Alamat tidak valid!", "#7f1d1d");
+        }
+
+        // Cek Cooldown 24 Jam
+        const lastClaim = localStorage.getItem('claim_' + addr);
+        if (lastClaim && (Date.now() - parseInt(lastClaim) < 86400000)) {
+            const sisaWaktu = Math.ceil((86400000 - (Date.now() - parseInt(lastClaim))) / 3600000);
+            return showMsg(`⏳ Tunggu <b>${sisaWaktu} jam</b> lagi untuk alamat ini!`, "#9a3412");
+        }
+
+        try {
+            btn.innerText = "Memproses..."; btn.disabled = true;
+            showMsg("Mengirim transaksi...", "#1e3a8a");
+            
+            const tx = await wallet.sendTransaction({ to: addr, value: ethers.utils.parseEther(REWARD) });
+            await tx.wait(); // Tunggu divalidasi oleh Prysm
+            
+            localStorage.setItem('claim_' + addr, Date.now());
+            showMsg(`✅ Berhasil! 1 ARS terkirim.<br><span style="font-size:11px; font-family:monospace;">${tx.hash}</span>`, "#14532d");
+        } catch (e) {
+            console.error(e);
+            showMsg("❌ Gagal. Pastikan Geth berjalan dan Faucet punya saldo.", "#7f1d1d");
+        } finally {
+            btn.innerText = "Klaim 1 ARS"; btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>
