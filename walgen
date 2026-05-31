@@ -10,7 +10,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'Fira Code', monospace; }
-        /* Custom Blur Effect for Secrets */
+        
+        /* Blur Effect untuk Data Sensitif */
         .secret-hidden { 
             filter: blur(6px); 
             user-select: none; 
@@ -29,75 +30,56 @@
 
     <div class="w-full max-w-3xl bg-slate-900/40 backdrop-blur-2xl border border-slate-700/50 p-6 sm:p-10 rounded-3xl shadow-2xl transition-all duration-500">
         
-        <!-- Header -->
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/20 text-blue-500 mb-4 shadow-inner border border-blue-500/20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                    <span class="text-blue-500">⚡</span> EVM Wallet Generator
+                </h2>
+                <p class="text-slate-400 text-xs mt-1">100% Client-Side. RAM Only. No Tracking.</p>
             </div>
-            <h2 class="text-3xl font-bold text-white mb-2 tracking-tight">EVM Wallet Generator</h2>
-            <p class="text-slate-400 text-sm max-w-md mx-auto">Generate a highly secure, locally-created EVM wallet. Data is never saved or sent to any server. Refreshing the page deletes the data.</p>
-        </div>
-
-        <!-- Generate Button -->
-        <button id="btn-generate" onclick="generateWallet()" class="w-full relative group overflow-hidden bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] flex justify-center items-center gap-2">
-            <svg class="w-5 h-5 animate-spin hidden" id="spinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span id="btn-text">Generate New Wallet</span>
-        </button>
-
-        <!-- Warning Box -->
-        <div class="mt-6 bg-amber-900/20 border border-amber-500/30 p-4 rounded-xl flex gap-3 text-amber-500 text-sm">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            <p><strong>Security Tip:</strong> For maximum security, disconnect from the internet before clicking generate, save your backup, and close this tab.</p>
-        </div>
-
-        <!-- Results Section (Hidden by default) -->
-        <div id="results" class="hidden mt-8 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
-            <hr class="border-slate-700/50 mb-8">
+            <button id="btn-generate" onclick="generateWallet()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform active:scale-[0.98] shadow-[0_0_20px_-5px_rgba(37,99,235,0.5)] flex justify-center items-center gap-2">
+                <svg class="w-5 h-5 animate-spin hidden" id="spinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span id="btn-text">Generate Wallet Baru</span>
+            </button>
+        </div>
 
-            <!-- 1. Address (Public) -->
+        <div class="space-y-5">
+            
             <div class="bg-slate-950/50 border border-slate-700/50 rounded-xl p-4">
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Wallet Address (Public)</label>
-                <div class="text-white font-mono text-sm sm:text-base break-all" id="val-address">...</div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">1. Wallet Address (Public)</label>
+                <div class="text-white font-mono text-sm sm:text-base break-all" id="val-address">- Belum di-generate -</div>
             </div>
 
-            <!-- 2. Public Key (Public) -->
             <div class="bg-slate-950/50 border border-slate-700/50 rounded-xl p-4">
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">2. Public Key (Public)</label>
-                <div class="text-slate-300 font-mono text-xs break-all" id="val-pubkey">...</div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">2. Public Key (Public)</label>
+                <div class="text-slate-400 font-mono text-xs break-all" id="val-pubkey">- Belum di-generate -</div>
             </div>
 
-            <!-- 3. Mnemonic Phrase (Secret) -->
-            <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-4 relative group">
+            <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-4 relative group transition-all" id="box-phrase">
                 <div class="flex justify-between items-center mb-2">
-                    <label class="text-xs font-semibold text-red-400 uppercase tracking-wider">3. Recovery Phrase (Secret)</label>
-                    <button onclick="toggleVisibility('val-phrase', 'icon-phrase')" class="text-slate-400 hover:text-white transition">
+                    <label class="text-[10px] font-bold text-red-400 uppercase tracking-widest">3. Recovery Phrase (Secret)</label>
+                    <button onclick="toggleVisibility('val-phrase', 'icon-phrase')" id="btn-eye-phrase" class="text-slate-500 hover:text-white transition pointer-events-none opacity-50">
                         <svg id="icon-phrase" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                     </button>
                 </div>
-                <div class="text-white font-mono text-sm sm:text-base secret-hidden bg-slate-950/80 p-3 rounded-lg border border-slate-800" id="val-phrase">...</div>
+                <div class="text-white font-mono text-sm sm:text-base bg-slate-950/80 p-3 rounded-lg border border-slate-800" id="val-phrase">- Belum di-generate -</div>
             </div>
 
-            <!-- 4. Private Key (Secret) -->
-            <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-4 relative group">
+            <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-4 relative group transition-all" id="box-privkey">
                 <div class="flex justify-between items-center mb-2">
-                    <label class="text-xs font-semibold text-red-400 uppercase tracking-wider">4. Private Key (Secret)</label>
-                    <button onclick="toggleVisibility('val-privkey', 'icon-privkey')" class="text-slate-400 hover:text-white transition">
+                    <label class="text-[10px] font-bold text-red-400 uppercase tracking-widest">4. Private Key (Secret)</label>
+                    <button onclick="toggleVisibility('val-privkey', 'icon-privkey')" id="btn-eye-privkey" class="text-slate-500 hover:text-white transition pointer-events-none opacity-50">
                         <svg id="icon-privkey" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                     </button>
                 </div>
-                <div class="text-white font-mono text-xs sm:text-sm break-all secret-hidden bg-slate-950/80 p-3 rounded-lg border border-slate-800" id="val-privkey">...</div>
+                <div class="text-white font-mono text-xs sm:text-sm break-all bg-slate-950/80 p-3 rounded-lg border border-slate-800" id="val-privkey">- Belum di-generate -</div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="pt-4 flex flex-col sm:flex-row gap-4">
-                <button onclick="downloadBackup()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex justify-center items-center gap-2">
+                <button id="btn-download" onclick="downloadBackup()" disabled class="flex-1 bg-slate-800 text-slate-500 font-semibold py-4 rounded-xl transition-all flex justify-center items-center gap-2 cursor-not-allowed">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Download Backup File
-                </button>
-                <button onclick="clearData()" class="px-6 bg-slate-800 hover:bg-red-600 text-white font-semibold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    Clear Data
+                    Simpan / Download File
                 </button>
             </div>
 
@@ -105,29 +87,26 @@
     </div>
 
 <script>
-    // Variabel disimpan HANYA DI RAM (Memory Browser)
-    // Tidak ada interaksi dengan localStorage, sessionStorage, apalagi Database.
+    // 6. Murni RAM-Only. Refresh halaman = data lenyap.
     let currentWalletData = null;
 
     async function generateWallet() {
         const btn = document.getElementById('btn-generate');
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btn-text');
-        const results = document.getElementById('results');
 
-        // UI Loading State
+        // Loading UI
         btn.disabled = true;
         spinner.classList.remove('hidden');
-        btnText.innerText = "Generating Securely...";
+        btnText.innerText = "Memproses...";
 
         try {
-            // Simulasi sedikit waktu komputasi agar UI terlihat bekerja secara profesional (opsional)
-            await new Promise(r => setTimeout(r, 600));
+            // Beri jeda sangat singkat agar UI loading sempat merender (opsional tapi baik untuk UX)
+            await new Promise(r => setTimeout(r, 200));
 
-            // Generate EVM Wallet menggunakan Ethers.js
+            // Ethers.js Wallet Generation
             const wallet = ethers.Wallet.createRandom();
 
-            // Simpan ke variabel RAM lokal
             currentWalletData = {
                 address: wallet.address,
                 publicKey: wallet.publicKey,
@@ -135,32 +114,36 @@
                 mnemonic: wallet.mnemonic.phrase
             };
 
-            // Tampilkan ke UI
+            // 1 & 2 & 7. Tampilkan Address & PubKey (Tanpa disembunyikan)
             document.getElementById('val-address').innerText = currentWalletData.address;
             document.getElementById('val-pubkey').innerText = currentWalletData.publicKey;
+            
+            // 3 & 4. Masukkan text Secret
             document.getElementById('val-phrase').innerText = currentWalletData.mnemonic;
             document.getElementById('val-privkey').innerText = currentWalletData.privateKey;
 
-            // Reset Visibility (Pastikan kembali tersembunyi setiap kali generate baru)
+            // 8. Terapkan mode hide pada Phrase & Private Key
             forceHide('val-phrase', 'icon-phrase');
             forceHide('val-privkey', 'icon-privkey');
-
-            // Tampilkan hasil
-            results.classList.remove('hidden');
             
+            // Aktifkan tombol mata (visibility toggle)
+            document.getElementById('btn-eye-phrase').classList.remove('pointer-events-none', 'opacity-50');
+            document.getElementById('btn-eye-privkey').classList.remove('pointer-events-none', 'opacity-50');
+
+            // Aktifkan Tombol Download
+            const btnDownload = document.getElementById('btn-download');
+            btnDownload.disabled = false;
+            btnDownload.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-xl transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] flex justify-center items-center gap-2 transform active:scale-[0.98] cursor-pointer";
+
         } catch (error) {
-            alert("Error generating wallet: " + error.message);
+            alert("Terjadi kesalahan sistem: " + error.message);
         } finally {
-            // Reset Button
             btn.disabled = false;
             spinner.classList.add('hidden');
-            btnText.innerText = "Generate New Wallet";
-            btn.classList.replace('bg-blue-600', 'bg-slate-700'); // Ubah warna tombol agar user fokus ke hasil
-            btn.classList.replace('hover:bg-blue-500', 'hover:bg-slate-600');
+            btnText.innerText = "Generate Wallet Baru";
         }
     }
 
-    // Fungsi Toggle Visibility (Mata)
     function toggleVisibility(elementId, iconId) {
         const el = document.getElementById(elementId);
         const icon = document.getElementById(iconId);
@@ -168,7 +151,6 @@
         if (el.classList.contains('secret-hidden')) {
             el.classList.remove('secret-hidden');
             el.classList.add('secret-revealed');
-            // Ganti icon ke mata terbuka
             icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
         } else {
             forceHide(elementId, iconId);
@@ -180,18 +162,17 @@
         const icon = document.getElementById(iconId);
         el.classList.add('secret-hidden');
         el.classList.remove('secret-revealed');
-        // Ganti icon ke mata tercoret
         icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>';
     }
 
-    // Fungsi Download Backup
+    // 5. Fungsi Download File
     function downloadBackup() {
         if (!currentWalletData) return;
 
         const date = new Date().toISOString().slice(0,10);
-        const backupContent = `======================================\nAPROST SECURE WALLET BACKUP\nDate Generated: ${date}\n======================================\n\n1. WALLET ADDRESS:\n${currentWalletData.address}\n\n2. PUBLIC KEY:\n${currentWalletData.publicKey}\n\n3. RECOVERY PHRASE (12 Words):\n${currentWalletData.mnemonic}\n\n4. PRIVATE KEY:\n${currentWalletData.privateKey}\n\n======================================\nSTORE THIS FILE OFFLINE AND NEVER SHARE YOUR PRIVATE KEY OR PHRASE.`;
+        const backupContent = `======================================\nAPROST SECURE WALLET BACKUP\nDate Generated: ${date}\n======================================\n\n1. WALLET ADDRESS:\n${currentWalletData.address}\n\n2. PUBLIC KEY:\n${currentWalletData.publicKey}\n\n3. RECOVERY PHRASE (12 Words):\n${currentWalletData.mnemonic}\n\n4. PRIVATE KEY:\n${currentWalletData.privateKey}\n\n======================================\nSTORE THIS FILE OFFLINE. NEVER SHARE YOUR PRIVATE KEY OR PHRASE.`;
 
-        // Menggunakan Blob untuk men-generate file langsung di RAM tanpa server
+        // Generate file on-the-fly dari RAM. Tidak mengirim ke server manapun.
         const blob = new Blob([backupContent], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         
@@ -201,27 +182,10 @@
         document.body.appendChild(a);
         a.click();
         
-        // Membersihkan URL dari RAM
         setTimeout(() => {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         }, 0);
-    }
-
-    // Menghapus data dari memori dan mereset UI
-    function clearData() {
-        currentWalletData = null; // Menghapus dari RAM
-        document.getElementById('results').classList.add('hidden');
-        
-        const btn = document.getElementById('btn-generate');
-        btn.classList.replace('bg-slate-700', 'bg-blue-600');
-        btn.classList.replace('hover:bg-slate-600', 'hover:bg-blue-500');
-        
-        // Bersihkan text di DOM agar tidak bisa di-inspect
-        document.getElementById('val-address').innerText = "...";
-        document.getElementById('val-pubkey').innerText = "...";
-        document.getElementById('val-phrase').innerText = "...";
-        document.getElementById('val-privkey').innerText = "...";
     }
 </script>
 </body>
