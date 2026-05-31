@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aerost EVM | Secure Wallet Generator</title>
+
+  <!-- Untuk produksi/offline: download file ini lalu ganti src ke ./ethers.umd.min.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg0: #020617;
+      --bg1: #07111f;
+      --panel: rgba(15, 23, 42, 0.74);
+      --panel2: rgba(2, 6, 23, 0.62);
+      --line: rgba(148, 163, 184, 0.18);
+      --line2: rgba(59, 130, 246, 0.24);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --faint: #64748b;
+      --blue: #2563eb;
+      --blue2: #60a5fa;
+      --green: #10b981;
+      --green2: #34d399;
+      --red: #f87171;
+      --redBg: rgba(127, 29, 29, 0.18);
+      --amber: #f59e0b;
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      --radius: 26px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg0);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.24), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 30rem),
+        linear-gradient(135deg, var(--bg1), var(--bg0) 62%, #000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .app-shell {
+      width: min(100%, 880px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      backdrop-filter: blur(22px);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 4vw, 42px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(130deg, rgba(255,255,255,0.07), transparent 34%),
+        radial-gradient(circle at 75% 0%, rgba(37,99,235,0.14), transparent 18rem);
+      pointer-events: none;
+    }
+
+    .app-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .logo {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 16px;
+      border: 1px solid var(--line2);
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      color: var(--blue2);
+      background: rgba(37, 99, 235, 0.12);
+      box-shadow: inset 0 0 30px rgba(37, 99, 235, 0.10);
+    }
+
+    .logo svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 5vw, 40px);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 10px auto 0;
+      max-width: 620px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .security-note {
+      margin: 20px 0 18px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fbbf24;
+      border-radius: 18px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .security-note strong {
+      color: #fde68a;
+    }
+
+    .main-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .copy-btn,
+    .icon-btn,
+    .danger-btn,
+    .save-btn {
+      cursor: pointer;
+      border-radius: 16px;
+      transition:
+        transform 160ms ease,
+        background 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease,
+        opacity 160ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .primary-btn {
+      width: 100%;
+      min-height: 56px;
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 20px 50px rgba(37, 99, 235, 0.25);
+    }
+
+    .primary-btn:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .primary-btn:active,
+    .save-btn:active,
+    .danger-btn:active,
+    .copy-btn:active,
+    .icon-btn:active {
+      transform: scale(0.98);
+    }
+
+    .primary-btn[disabled] {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+      display: none;
+    }
+
+    .is-loading .spinner {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-line {
+      color: var(--faint);
+      text-align: center;
+      font-size: 12px;
+      margin: 14px 0 0;
+      min-height: 18px;
+    }
+
+    .result {
+      margin-top: 28px;
+      display: grid;
+      gap: 14px;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 240ms ease, transform 240ms ease;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .secret-card {
+      border-color: rgba(248, 113, 113, 0.24);
+      background: var(--redBg);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 11px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .secret-card .label {
+      color: #fca5a5;
+    }
+
+    .field {
+      min-height: 44px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 14px;
+      background: rgba(2, 6, 23, 0.8);
+      padding: 12px;
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.55;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .field.small {
+      font-size: 12px;
+    }
+
+    .secret-hidden {
+      filter: blur(7px);
+      opacity: 0.58;
+      user-select: none;
+    }
+
+    .secret-revealed {
+      filter: blur(0);
+      opacity: 1;
+      user-select: text;
+    }
+
+    .button-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .copy-btn,
+    .icon-btn {
+      color: var(--blue2);
+      background: rgba(37, 99, 235, 0.14);
+      border: 1px solid rgba(96, 165, 250, 0.22);
+      min-height: 36px;
+      padding: 8px 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .secret-card .copy-btn {
+      color: var(--green2);
+      background: rgba(16, 185, 129, 0.13);
+      border-color: rgba(52, 211, 153, 0.22);
+    }
+
+    .icon-btn {
+      width: 38px;
+      padding: 0;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.82);
+    }
+
+    .copy-btn:hover,
+    .icon-btn:hover {
+      border-color: rgba(255,255,255,0.32);
+      color: #fff;
+    }
+
+    .footer-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .save-btn {
+      min-height: 54px;
+      color: #fff;
+      background: linear-gradient(135deg, #059669, #047857);
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 20px 50px rgba(5, 150, 105, 0.22);
+    }
+
+    .save-btn:hover {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .danger-btn {
+      min-height: 54px;
+      padding: 0 18px;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.28);
+      border: 1px solid rgba(248, 113, 113, 0.22);
+      font-weight: 850;
+    }
+
+    .danger-btn:hover {
+      color: #fff;
+      background: rgba(220, 38, 38, 0.45);
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .toast-container {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 999;
+      display: grid;
+      gap: 10px;
+      width: min(calc(100vw - 36px), 380px);
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.94);
+      color: #fff;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.38);
+      padding: 13px 15px;
+      font-size: 13px;
+      font-weight: 750;
+      transform: translateY(14px);
+      opacity: 0;
+      transition: transform 220ms ease, opacity 220ms ease;
+      backdrop-filter: blur(14px);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.ok {
+      border-color: rgba(52, 211, 153, 0.28);
+    }
+
+    .toast.warn {
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .toast.err {
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+
+    @media (max-width: 680px) {
+      body {
+        align-items: flex-start;
+        padding: 14px;
+      }
+
+      .app-shell {
+        border-radius: 22px;
+        padding: 20px;
+      }
+
+      .card-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .button-row {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .copy-btn {
+        flex: 1;
+      }
+
+      .footer-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .danger-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <main class="app-shell">
+    <div class="app-content">
+      <header class="header">
+        <div class="logo" aria-hidden="true">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 3l7 4v5c0 4.6-2.9 7.9-7 9-4.1-1.1-7-4.4-7-9V7l7-4z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M9.5 12.2l1.8 1.8 3.7-4"></path>
+          </svg>
+        </div>
+
+        <h1>Aerost Wallet Generator</h1>
+        <p class="subtitle">
+          Generate dompet EVM di browser. Data tidak disimpan ke LocalStorage, SessionStorage, database, atau server.
+          Hasil baru muncul setelah tombol Generate ditekan.
+        </p>
+      </header>
+
+      <section class="security-note">
+        <span aria-hidden="true">⚠️</span>
+        <div>
+          <strong>Catatan keamanan:</strong> RAM-only mengurangi jejak penyimpanan lokal, tapi tetap hindari browser extension mencurigakan, screenshot, clipboard lama, dan perangkat publik.
+        </div>
+      </section>
+
+      <section class="main-actions">
+        <button id="btn-generate" class="primary-btn" type="button">
+          <span id="spinner" class="spinner" aria-hidden="true"></span>
+          <span id="btn-text">Generate Dompet Baru</span>
+        </button>
+        <p id="status-line" class="status-line">UI siap. Belum ada wallet yang dibuat.</p>
+      </section>
+
+      <section id="result-container" class="result is-hidden" aria-label="Hasil wallet">
+        <article class="card">
+          <div class="card-top">
+            <div class="label">1. Wallet Address</div>
+            <div class="button-row">
+              <button class="copy-btn" type="button" data-copy="address">Copy</button>
+            </div>
+          </div>
+          <div id="ui-address" class="field">...</div>
+        </article>
+
+        <article class="card">
+          <div class="card-top">
+            <div class="label">2. Public Key</div>
+            <div class="button-row">
+              <button class="copy-btn" type="button" data-copy="publicKey">Copy</button>
+            </div>
+          </div>
+          <div id="ui-pubkey" class="field small">...</div>
+        </article>
+
+        <article class="card secret-card">
+          <div class="card-top">
+            <div class="label">3. Recovery Phrase</div>
+            <div class="button-row">
+              <button class="icon-btn" type="button" data-toggle="phrase" aria-label="Tampilkan atau sembunyikan recovery phrase">
+                <span id="eye-phrase">👁️</span>
+              </button>
+              <button class="copy-btn" type="button" data-copy="mnemonic">Copy</button>
+            </div>
+          </div>
+          <div id="ui-phrase" class="field secret-hidden">...</div>
+        </article>
+
+        <article class="card secret-card">
+          <div class="card-top">
+            <div class="label">4. Private Key</div>
+            <div class="button-row">
+              <button class="icon-btn" type="button" data-toggle="privateKey" aria-label="Tampilkan atau sembunyikan private key">
+                <span id="eye-private">👁️</span>
+              </button>
+              <button class="copy-btn" type="button" data-copy="privateKey">Copy</button>
+            </div>
+          </div>
+          <div id="ui-privkey" class="field small secret-hidden">...</div>
+        </article>
+
+        <div class="footer-actions">
+          <button id="btn-save" class="save-btn" type="button">
+            💾 Save File Backup
+          </button>
+          <button id="btn-clear" class="danger-btn" type="button">
+            Clear RAM
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    /*
+      Alur sengaja dikunci:
+      1. Tidak ada fungsi download yang dipanggil saat halaman dibuka.
+      2. Download hanya terjadi kalau user klik tombol Save File Backup.
+      3. Wallet hanya disimpan di variabel RAM walletRAM.
+    */
+
+    let walletRAM = null;
+
+    const els = {
+      generate: document.getElementById("btn-generate"),
+      spinner: document.getElementById("spinner"),
+      btnText: document.getElementById("btn-text"),
+      status: document.getElementById("status-line"),
+      result: document.getElementById("result-container"),
+      address: document.getElementById("ui-address"),
+      pubkey: document.getElementById("ui-pubkey"),
+      phrase: document.getElementById("ui-phrase"),
+      privkey: document.getElementById("ui-privkey"),
+      eyePhrase: document.getElementById("eye-phrase"),
+      eyePrivate: document.getElementById("eye-private"),
+      save: document.getElementById("btn-save"),
+      clear: document.getElementById("btn-clear"),
+      toastContainer: document.getElementById("toast-container")
+    };
+
+    function setLoading(isLoading) {
+      els.generate.disabled = isLoading;
+      els.generate.classList.toggle("is-loading", isLoading);
+      els.btnText.textContent = isLoading ? "Memproses..." : "Generate Dompet Baru";
+    }
+
+    function showToast(message, type = "ok") {
+      const toast = document.createElement("div");
+      toast.className = "toast " + type;
+      toast.textContent = message;
+
+      els.toastContainer.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add("show"));
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 240);
+      }, 2600);
+    }
+
+    function getEthersWalletFactory() {
+      if (!window.ethers || !window.ethers.Wallet) {
+        return null;
+      }
+      return window.ethers.Wallet;
+    }
+
+    async function generateWallet() {
+      setLoading(true);
+      els.status.textContent = "Membuat wallet di memory browser...";
+
+      try {
+        const Wallet = getEthersWalletFactory();
+        if (!Wallet) {
+          throw new Error("Library ethers.js belum terbaca. Cek koneksi CDN atau pakai file ethers lokal.");
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 160));
+
+        const wallet = Wallet.createRandom();
+        const publicKey = wallet.publicKey || wallet._signingKey().publicKey;
+
+        walletRAM = {
+          address: wallet.address,
+          publicKey: publicKey,
+          mnemonic: wallet.mnemonic.phrase,
+          privateKey: wallet.privateKey
+        };
+
+        els.address.textContent = walletRAM.address;
+        els.pubkey.textContent = walletRAM.publicKey;
+        els.phrase.textContent = walletRAM.mnemonic;
+        els.privkey.textContent = walletRAM.privateKey;
+
+        forceSecretHidden("phrase");
+        forceSecretHidden("privateKey");
+
+        els.result.classList.remove("is-hidden");
+        els.status.textContent = "Wallet berhasil dibuat. Simpan backup secara offline.";
+        showToast("✅ Wallet berhasil dibuat.", "ok");
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        els.status.textContent = "Gagal membuat wallet.";
+        showToast("❌ " + message, "err");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function forceSecretHidden(kind) {
+      if (kind === "phrase") {
+        els.phrase.classList.add("secret-hidden");
+        els.phrase.classList.remove("secret-revealed");
+        els.eyePhrase.textContent = "👁️";
+      }
+
+      if (kind === "privateKey") {
+        els.privkey.classList.add("secret-hidden");
+        els.privkey.classList.remove("secret-revealed");
+        els.eyePrivate.textContent = "👁️";
+      }
+    }
+
+    function toggleSecret(kind) {
+      const target = kind === "phrase" ? els.phrase : els.privkey;
+      const icon = kind === "phrase" ? els.eyePhrase : els.eyePrivate;
+
+      const isHidden = target.classList.contains("secret-hidden");
+      target.classList.toggle("secret-hidden", !isHidden);
+      target.classList.toggle("secret-revealed", isHidden);
+      icon.textContent = isHidden ? "🙈" : "👁️";
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      const ok = document.execCommand("copy");
+      textarea.remove();
+
+      if (!ok) {
+        throw new Error("Clipboard gagal. Salin manual setelah reveal.");
+      }
+    }
+
+    async function copyData(key) {
+      if (!walletRAM || !walletRAM[key]) {
+        showToast("⚠️ Generate wallet dulu.", "warn");
+        return;
+      }
+
+      try {
+        await copyText(walletRAM[key]);
+
+        const label = {
+          address: "Address",
+          publicKey: "Public key",
+          mnemonic: "Recovery phrase",
+          privateKey: "Private key"
+        }[key] || "Data";
+
+        showToast("📋 " + label + " disalin.", "ok");
+      } catch (err) {
+        const message = err && err.message ? err.message : String(err);
+        showToast("❌ " + message, "err");
+      }
+    }
+
+    function downloadBackupFile() {
+      if (!walletRAM) {
+        showToast("⚠️ Generate wallet dulu.", "warn");
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const content = [
+        "======================================",
+        "AEROST EVM WALLET BACKUP",
+        "Generated At: " + now,
+        "======================================",
+        "",
+        "1. WALLET ADDRESS:",
+        walletRAM.address,
+        "",
+        "2. PUBLIC KEY:",
+        walletRAM.publicKey,
+        "",
+        "3. RECOVERY PHRASE:",
+        walletRAM.mnemonic,
+        "",
+        "4. PRIVATE KEY:",
+        walletRAM.privateKey,
+        "",
+        "======================================",
+        "WARNING:",
+        "Never share your recovery phrase or private key.",
+        "Store this file offline.",
+        "======================================"
+      ].join("\n");
+
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+
+      a.href = url;
+      a.download = "Aerost_Wallet_" + walletRAM.address.slice(0, 8) + ".txt";
+      document.body.appendChild(a);
+
+      /*
+        Ini satu-satunya baris yang memicu download.
+        Baris ini hanya jalan setelah user klik tombol Save File Backup.
+      */
+      a.click();
+
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      showToast("💾 File backup dibuat.", "ok");
+    }
+
+    function clearRAM() {
+      walletRAM = null;
+
+      els.address.textContent = "...";
+      els.pubkey.textContent = "...";
+      els.phrase.textContent = "...";
+      els.privkey.textContent = "...";
+
+      forceSecretHidden("phrase");
+      forceSecretHidden("privateKey");
+
+      els.result.classList.add("is-hidden");
+      els.status.textContent = "Data sudah dibersihkan dari variabel RAM dan UI.";
+      showToast("🧹 RAM/UI dibersihkan.", "ok");
+    }
+
+    els.generate.addEventListener("click", generateWallet);
+    els.save.addEventListener("click", downloadBackupFile);
+    els.clear.addEventListener("click", clearRAM);
+
+    document.addEventListener("click", event => {
+      const copyButton = event.target.closest("[data-copy]");
+      if (copyButton) {
+        copyData(copyButton.getAttribute("data-copy"));
+      }
+
+      const toggleButton = event.target.closest("[data-toggle]");
+      if (toggleButton) {
+        toggleSecret(toggleButton.getAttribute("data-toggle"));
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      walletRAM = null;
+    });
+  </script>
+</body>
+</html>
