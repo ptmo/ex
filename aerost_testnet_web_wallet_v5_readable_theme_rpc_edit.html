@@ -1,0 +1,2622 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aerost Testnet Wallet</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #050917;
+      --bg2: #030611;
+      --card: #071126cc;
+      --card-solid: #071026;
+      --card2: #030817dd;
+      --line: #91a6d22b;
+      --txt: #f5f7ff;
+      --mut: #8d98b2;
+      --blue: #2d63ef;
+      --blue2: #2452d8;
+      --green: #47d391;
+      --red: #ff5f7a;
+      --amber: #f5b94e;
+      --shadow: #0008;
+      --input: #030817;
+      --glass: #050a1a99;
+      --glass-strong: #050a1aec;
+    }
+
+    body.light {
+      --bg: #eef4ff;
+      --bg2: #f8fbff;
+      --card: #ffffffcc;
+      --card-solid: #ffffff;
+      --card2: #f7faffdd;
+      --line: #1c376122;
+      --txt: #101828;
+      --mut: #667085;
+      --blue: #245de8;
+      --blue2: #1748c9;
+      --green: #0b9f68;
+      --red: #e04462;
+      --amber: #b87800;
+      --shadow: #0b1b3d1c;
+      --input: #ffffff;
+      --glass: #ffffffb8;
+      --glass-strong: #fffffff0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 0, #244fa950, transparent 34%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      color: var(--txt);
+      font-family: Inter, system-ui, Segoe UI, sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .mono {
+      font-family: Consolas, Menlo, monospace;
+    }
+
+    .wrap {
+      width: min(1080px, calc(100% - 24px));
+      margin: auto;
+      padding: 18px 0 38px;
+    }
+
+    .shell {
+      min-height: calc(100vh - 36px);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: var(--glass);
+      box-shadow: 0 30px 90px var(--shadow);
+      overflow: hidden;
+    }
+
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--glass-strong);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(16px);
+    }
+
+    .brand b {
+      font-size: clamp(18px, 4vw, 23px);
+    }
+
+    .brand small {
+      display: block;
+      color: var(--mut);
+      margin-top: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .net,
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      color: var(--txt);
+      font-weight: 800;
+    }
+
+    .net {
+      gap: 9px;
+      padding: 10px 13px;
+      font-size: 12px;
+      max-width: 46vw;
+    }
+
+    .theme-btn {
+      width: 44px;
+      font-size: 17px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 0 4px #ff5f7a22;
+      flex-shrink: 0;
+    }
+
+    .dot.on {
+      background: var(--green);
+      box-shadow: 0 0 0 4px #47d39122;
+    }
+
+    .page {
+      padding: clamp(16px, 3vw, 28px);
+    }
+
+    .center {
+      max-width: 760px;
+      margin: auto;
+      padding: clamp(18px, 4vw, 32px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, var(--card), var(--card2));
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 7vw, 43px);
+      letter-spacing: -0.04em;
+    }
+
+    .hero p,
+    .hint {
+      color: var(--mut);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 15px;
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      min-height: 48px;
+      border-radius: 999px;
+      padding: 0 17px;
+      background: #0b1735;
+      border: 1px solid var(--line);
+      color: var(--txt);
+      font-weight: 850;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    body.light .btn {
+      background: #eef4ff;
+    }
+
+    .btn:hover {
+      border-color: #79a4ff88;
+    }
+
+    .pri {
+      background: linear-gradient(180deg, #376ff8, var(--blue2));
+      color: #fff;
+      box-shadow: 0 18px 38px #2d63ef33;
+    }
+
+    .grn {
+      background: #123d2f;
+      color: #9cf0c8;
+      border-color: #47d39155;
+    }
+
+    body.light .grn {
+      background: #e7fff5;
+      color: #067647;
+    }
+
+    .red {
+      background: #431423;
+      color: #ffbac7;
+      border-color: #ff5f7a55;
+    }
+
+    body.light .red {
+      background: #fff0f3;
+      color: #b4233c;
+    }
+
+    .inp,
+    .sel,
+    .ta {
+      width: 100%;
+      min-height: 49px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--input);
+      color: var(--txt);
+      outline: 0;
+      padding: 14px;
+    }
+
+    .ta {
+      min-height: 118px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .inp:focus,
+    .sel:focus,
+    .ta:focus {
+      border-color: #79a4ff99;
+      box-shadow: 0 0 0 4px #2d63ef22;
+    }
+
+    .lab {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--mut);
+      font-weight: 900;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
+      padding: 17px;
+    }
+
+    .secret {
+      background: #46102a66;
+      border-color: #ff5f7a33;
+    }
+
+    body.light .secret {
+      background: #fff1f4;
+    }
+
+    .val {
+      margin-top: 9px;
+      padding: 14px;
+      border: 1px solid #91a6d21c;
+      border-radius: 16px;
+      background: var(--input);
+      word-break: break-word;
+      line-height: 1.7;
+    }
+
+    .blur {
+      filter: blur(7px);
+      user-select: none;
+      opacity: 0.65;
+    }
+
+    .dash {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 17px;
+      align-items: start;
+    }
+
+    .bal {
+      font-size: clamp(34px, 8vw, 50px);
+      font-weight: 950;
+      letter-spacing: -0.06em;
+      margin-top: 6px;
+    }
+
+    .addr {
+      color: var(--mut);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .quick {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 15px;
+    }
+
+    .qbtn {
+      min-height: 76px;
+      border-radius: 20px;
+      background: #071633;
+      border: 1px solid var(--line);
+      color: var(--txt);
+      font-weight: 900;
+    }
+
+    body.light .qbtn {
+      background: #eef4ff;
+    }
+
+    .qbtn small {
+      display: block;
+      color: var(--mut);
+      font-weight: 600;
+      margin-top: 5px;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .title h2 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .token {
+      width: 100%;
+      text-align: left;
+      color: var(--txt);
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: #071633aa;
+      padding: 15px;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 13px;
+      align-items: center;
+    }
+
+    body.light .token {
+      background: #f5f8ff;
+    }
+
+    .ico {
+      width: 48px;
+      height: 48px;
+      border-radius: 17px;
+      background: linear-gradient(160deg, var(--blue), #47d39188);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+    }
+
+    .sub {
+      color: var(--mut);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .tb {
+      text-align: right;
+      font-weight: 900;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hist {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hi {
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--input);
+      padding: 13px;
+      color: var(--txt);
+      display: grid;
+      gap: 5px;
+    }
+
+    .hi span {
+      font-size: 12px;
+      color: var(--mut);
+      word-break: break-all;
+    }
+
+    .toastbox {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 90;
+      display: grid;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--card-solid);
+      border: 1px solid #2d63ef66;
+      border-radius: 16px;
+      padding: 13px 16px;
+      box-shadow: 0 20px 50px var(--shadow);
+      transform: translateY(14px);
+      opacity: 0;
+      transition: 0.22s;
+      max-width: min(360px, calc(100vw - 32px));
+      font-size: 13px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .back {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000a;
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .back.show {
+      display: flex;
+    }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      background: var(--card-solid);
+      border: 1px solid var(--line);
+      border-radius: 27px;
+      box-shadow: 0 30px 100px var(--shadow);
+    }
+
+    .modal.wide {
+      width: min(960px, 100%);
+    }
+
+    .mh {
+      position: sticky;
+      top: 0;
+      background: var(--card-solid);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 19px;
+      z-index: 2;
+    }
+
+    .mh h3 {
+      margin: 0;
+    }
+
+    .x {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      background: #ffffff12;
+      color: var(--txt);
+      border: 1px solid var(--line);
+      font-size: 20px;
+    }
+
+    body.light .x {
+      background: #eef4ff;
+    }
+
+    .mb {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .fee {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .fbtn {
+      min-height: 72px;
+      border-radius: 18px;
+      background: var(--input);
+      border: 1px solid var(--line);
+      color: var(--txt);
+    }
+
+    .fbtn.act {
+      background: #123d2f;
+      border-color: #47d39188;
+      color: #9cf0c8;
+    }
+
+    body.light .fbtn.act {
+      background: #e7fff5;
+      color: #067647;
+    }
+
+    .qr {
+      width: 238px;
+      height: 238px;
+      background: #fff;
+      padding: 14px;
+      border-radius: 24px;
+      margin: auto;
+      display: grid;
+      place-items: center;
+    }
+
+    .link {
+      color: #8fb2ff;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    body.light .link {
+      color: #245de8;
+    }
+
+    .video {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      height: auto;
+      min-height: 0;
+      max-height: min(78vw, 430px);
+      object-fit: cover;
+      border-radius: 18px;
+      background: #000;
+      display: block;
+    }
+
+    .scanTools {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .fileInp {
+      display: none !important;
+    }
+
+    .rpc-card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .rpc-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .rpc-form-grid .wide-field {
+      grid-column: 1 / -1;
+    }
+
+    .small-btn {
+      min-height: 38px;
+      padding: 0 14px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .dash,
+      .g2,
+      .fee {
+        grid-template-columns: 1fr;
+      }
+
+      .token {
+        grid-template-columns: 48px 1fr;
+      }
+
+      .tb {
+        grid-column: 1 / -1;
+        text-align: left;
+        max-width: none;
+      }
+
+      .net {
+        max-width: 42vw;
+      }
+
+      .quick {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .rpc-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .rpc-form-grid .wide-field {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .wrap {
+        width: 100%;
+        padding: 0;
+      }
+
+      .shell {
+        border-radius: 0;
+        min-height: 100vh;
+      }
+
+      .page {
+        padding: 16px;
+      }
+
+      .top {
+        padding: 14px;
+      }
+
+      .center {
+        border-radius: 24px;
+      }
+
+      .g2 {
+        grid-template-columns: 1fr;
+      }
+
+      .theme-btn {
+        width: 42px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="toastbox" id="toastbox"></div>
+
+  <div class="wrap">
+    <main class="shell">
+      <header class="top">
+        <div class="brand">
+          <b>Aerost Testnet Wallet</b>
+          <small id="sub">Session wallet aktif sampai tab ditutup/logout. Token disimpan sampai logout.</small>
+        </div>
+
+        <div class="top-actions">
+          <button class="net" onclick="openRpc()">
+            <span id="dot" class="dot"></span>
+            <span id="netname">Network</span>
+          </button>
+
+          <button id="themeBtn" class="theme-btn" onclick="toggleTheme()" title="Dark / Light mode">
+            🌙
+          </button>
+        </div>
+      </header>
+
+      <section class="page">
+        <div id="gate" class="center">
+          <div class="hero">
+            <h1>Generator + Web Wallet</h1>
+            <p>Buat wallet, backup sendiri, lalu verifikasi 3 kata random sebelum masuk. Untuk testnet. Secret tidak disimpan localStorage.</p>
+          </div>
+
+          <div class="grid">
+            <button class="btn pri" onclick="genWallet()">Generate Dompet Baru</button>
+
+            <div class="panel">
+              <div class="title">
+                <h2>Masuk dari backup</h2>
+              </div>
+
+              <textarea id="imp" class="ta" placeholder="Paste recovery phrase 12 kata atau private key 0x..."></textarea>
+              <button class="btn" onclick="importWallet()">Import / Unlock</button>
+
+              <p class="hint">Refresh tetap di halaman wallet selama tab belum ditutup. Kalau tab ditutup atau logout, import backup lagi. Phrase tetap diverifikasi 3 kata random.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="backup" class="center hidden">
+          <div class="hero">
+            <h1>Backup Wallet</h1>
+            <p>Download atau copy. Setelah itu lanjut verifikasi.</p>
+          </div>
+
+          <div class="grid">
+            <div class="panel">
+              <div class="lab">Wallet Address</div>
+              <div id="bAddr" class="val mono"></div>
+              <button class="btn" onclick="copy(wallet.address, 'Alamat disalin')">Copy</button>
+            </div>
+
+            <div class="panel secret">
+              <div class="lab">Recovery Phrase</div>
+              <div id="bPhrase" class="val mono"></div>
+              <button class="btn grn" onclick="copy(wallet.mnemonic.phrase, 'Phrase disalin')">Copy Phrase</button>
+            </div>
+
+            <div class="panel secret">
+              <div class="lab">Private Key</div>
+              <div id="bPk" class="val mono"></div>
+              <button class="btn grn" onclick="copy(wallet.privateKey, 'Private key disalin')">Copy PK</button>
+            </div>
+
+            <div class="g2">
+              <button class="btn grn" onclick="downloadBackup()">Download Backup</button>
+              <button class="btn pri" onclick="startVerify()">Sudah Backup, Verifikasi</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="verify" class="center hidden">
+          <div class="hero">
+            <h1>Verifikasi Phrase</h1>
+            <p id="vinfo">Masukkan 3 kata random.</p>
+          </div>
+
+          <div id="vfields" class="grid"></div>
+
+          <div class="g2" style="margin-top: 15px;">
+            <button class="btn pri" onclick="checkVerify()">Buka Wallet</button>
+            <button class="btn" onclick="startVerify()">Acak Ulang</button>
+          </div>
+        </div>
+
+        <div id="walletView" class="hidden">
+          <div class="dash">
+            <aside class="grid">
+              <div class="panel">
+                <div class="lab">Native Balance</div>
+                <div class="bal"><span id="nBal">0</span></div>
+                <div class="hint" id="nSym">ARS</div>
+                <div class="addr mono" id="waddr"></div>
+
+                <div class="quick">
+                  <button class="qbtn" onclick="openSend()">Kirim<small>Native / token</small></button>
+                  <button class="qbtn" onclick="openReceive()">Terima<small>QR request</small></button>
+                  <button class="qbtn" onclick="openTokenImport()">Import<small>ERC20</small></button>
+                  <button class="qbtn" onclick="openSettings()">Setting<small>Backup/logout</small></button>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="title">
+                  <h2>Riwayat</h2>
+                  <button class="btn small-btn" onclick="renderHist(true)">Refresh</button>
+                </div>
+
+                <div id="hist" class="hist"></div>
+              </div>
+            </aside>
+
+            <section class="grid">
+              <div class="panel">
+                <div class="title">
+                  <h2>Daftar Token</h2>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn small-btn" onclick="refreshAll()">Refresh</button>
+                    <button class="btn small-btn" onclick="scanTokens()">Scan Token</button>
+                  </div>
+                </div>
+
+                <p class="hint">Native coin selalu paling atas. Token bernilai jual tidak bisa dipastikan murni dari RPC. Jika Blockscout API tersedia, scan token bisa dicoba. Jika belum terindeks, import contract manual.</p>
+
+                <div id="tokens" class="grid" style="margin-top: 12px;"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="back" class="back" onclick="if (event.target.id === 'back') closeModal()">
+    <div id="modal" class="modal" onclick="event.stopPropagation()">
+      <div class="mh">
+        <h3 id="mt">Modal</h3>
+        <button class="x" onclick="closeModal()">×</button>
+      </div>
+
+      <div id="mb" class="mb"></div>
+    </div>
+  </div>
+
+  <script>
+    const ABI = [
+      "function name() view returns (string)",
+      "function symbol() view returns (string)",
+      "function decimals() view returns (uint8)",
+      "function balanceOf(address) view returns (uint256)",
+      "function transfer(address,uint256) returns (bool)"
+    ];
+
+    const DEF = {
+      id: "aerost",
+      name: "Aerost Testnet",
+      rpcUrl: "https://rpc.faylotto.xyz",
+      chainId: 16888,
+      symbol: "ARS",
+      explorerUrl: "https://texplorer.faylotto.xyz",
+      api: "https://texplorer.faylotto.xyz/api/v2"
+    };
+
+    const K = {
+      rpcs: "aerost_wallet_rpcs_v2",
+      sel: "aerost_wallet_selected_rpc_v2",
+      p: "aerost_web_wallet_v2",
+      sess: "aerost_wallet_active_session_v2",
+      theme: "aerost_wallet_theme_v1"
+    };
+
+    let wallet = null;
+    let provider = null;
+    let net = null;
+    let toks = [];
+    let vidStream = null;
+    let scanTimer = null;
+    let verifyIdx = [];
+    let pending = null;
+    let feeMode = "normal";
+    let histSyncing = false;
+    let editingRpcId = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    window.addEventListener("load", () => {
+      bootTheme();
+      bootRpcs();
+      loadNet();
+      checkNet();
+
+      if (restoreSession()) {
+        toast("✅ Sesi wallet dipulihkan setelah refresh.");
+        enter();
+      } else {
+        show("gate");
+      }
+    });
+
+    function show(id) {
+      ["gate", "backup", "verify", "walletView"].forEach((viewId) => {
+        $(viewId).classList.add("hidden");
+      });
+
+      $(id).classList.remove("hidden");
+    }
+
+    function bootTheme() {
+      const theme = localStorage.getItem(K.theme) || "dark";
+      document.body.classList.toggle("light", theme === "light");
+      updateThemeButton();
+    }
+
+    function toggleTheme() {
+      const next = document.body.classList.contains("light") ? "dark" : "light";
+      localStorage.setItem(K.theme, next);
+      document.body.classList.toggle("light", next === "light");
+      updateThemeButton();
+      toast(next === "light" ? "☀️ Light mode aktif" : "🌙 Dark mode aktif");
+    }
+
+    function updateThemeButton() {
+      const btn = $("themeBtn");
+      if (!btn) return;
+
+      btn.textContent = document.body.classList.contains("light") ? "☀️" : "🌙";
+    }
+
+    function bootRpcs() {
+      if (!localStorage.getItem(K.rpcs)) {
+        localStorage.setItem(K.rpcs, JSON.stringify([DEF]));
+      }
+
+      if (!localStorage.getItem(K.sel)) {
+        localStorage.setItem(K.sel, DEF.id);
+      }
+    }
+
+    function rpcs() {
+      try {
+        const list = JSON.parse(localStorage.getItem(K.rpcs) || "[]");
+        return Array.isArray(list) && list.length ? list : [DEF];
+      } catch {
+        return [DEF];
+      }
+    }
+
+    function saveRpcs(list) {
+      localStorage.setItem(K.rpcs, JSON.stringify(list));
+    }
+
+    function loadNet() {
+      const list = rpcs();
+      const selectedId = localStorage.getItem(K.sel);
+
+      net = list.find((item) => item.id === selectedId) || list[0] || DEF;
+      provider = new ethers.providers.JsonRpcProvider(net.rpcUrl);
+
+      $("netname").textContent = net.name;
+      $("nSym").textContent = net.symbol;
+    }
+
+    async function checkNet() {
+      try {
+        provider = new ethers.providers.JsonRpcProvider(net.rpcUrl);
+
+        const network = await provider.getNetwork();
+        await provider.getBlockNumber();
+
+        $("dot").classList.add("on");
+        $("netname").textContent = net.name + " #" + network.chainId;
+      } catch (error) {
+        $("dot").classList.remove("on");
+        $("netname").textContent = net.name + " offline";
+      }
+    }
+
+    function genWallet() {
+      wallet = ethers.Wallet.createRandom();
+
+      $("bAddr").textContent = wallet.address;
+      $("bPhrase").textContent = wallet.mnemonic.phrase;
+      $("bPk").textContent = wallet.privateKey;
+
+      show("backup");
+      toast("✅ Wallet dibuat. Backup dulu.");
+    }
+
+    function importWallet() {
+      const secret = $("imp").value.trim();
+
+      if (!secret) {
+        toast("Isi phrase atau private key.");
+        return;
+      }
+
+      try {
+        if (secret.startsWith("0x")) {
+          wallet = new ethers.Wallet(secret);
+          toast("✅ Private key diimport. Phrase tidak tersedia.");
+          enter();
+          return;
+        }
+
+        wallet = ethers.Wallet.fromMnemonic(secret);
+        startVerify();
+      } catch (error) {
+        toast("Backup tidak valid: " + error.message);
+      }
+    }
+
+    function pick() {
+      const set = new Set();
+
+      while (set.size < 3) {
+        set.add(Math.floor(Math.random() * 12));
+      }
+
+      return [...set].sort((a, b) => a - b);
+    }
+
+    function startVerify() {
+      if (!wallet?.mnemonic?.phrase) {
+        enter();
+        return;
+      }
+
+      verifyIdx = pick();
+      $("vfields").innerHTML = "";
+
+      verifyIdx.forEach((index) => {
+        $("vfields").insertAdjacentHTML(
+          "beforeend",
+          `
+            <div class="grid">
+              <div class="lab">Word ${index + 1}</div>
+              <input class="inp vw" data-i="${index}" placeholder="Kata ke-${index + 1}" autocomplete="off">
+            </div>
+          `
+        );
+      });
+
+      $("vinfo").textContent = "Masukkan " + verifyIdx.map((index) => "word " + (index + 1)).join(", ");
+      show("verify");
+    }
+
+    function checkVerify() {
+      const words = wallet.mnemonic.phrase.trim().split(/\s+/);
+
+      const ok = [...document.querySelectorAll(".vw")].every((input) => {
+        return input.value.trim().toLowerCase() === words[+input.dataset.i].toLowerCase();
+      });
+
+      if (!ok) {
+        toast("❌ Verifikasi salah.");
+        return;
+      }
+
+      toast("✅ Phrase cocok.");
+      enter();
+    }
+
+    function restoreSession() {
+      try {
+        const raw = sessionStorage.getItem(K.sess);
+
+        if (!raw) {
+          return false;
+        }
+
+        const data = JSON.parse(raw);
+
+        if (data.mnemonic) {
+          wallet = ethers.Wallet.fromMnemonic(data.mnemonic);
+        } else if (data.privateKey) {
+          wallet = new ethers.Wallet(data.privateKey);
+        } else {
+          return false;
+        }
+
+        return Boolean(wallet?.address);
+      } catch (error) {
+        sessionStorage.removeItem(K.sess);
+        return false;
+      }
+    }
+
+    function saveSession() {
+      if (!wallet) return;
+
+      const data = {
+        address: wallet.address,
+        privateKey: wallet.privateKey,
+        ts: Date.now()
+      };
+
+      if (wallet.mnemonic?.phrase) {
+        data.mnemonic = wallet.mnemonic.phrase;
+      }
+
+      sessionStorage.setItem(K.sess, JSON.stringify(data));
+    }
+
+    async function enter() {
+      saveSession();
+      show("walletView");
+
+      $("waddr").textContent = wallet.address;
+      $("sub").textContent = short(wallet.address);
+
+      loadToks();
+      renderHist();
+      renderTokens();
+
+      await refreshAll();
+    }
+
+    function sk(kind) {
+      return `${K.p}:${net.chainId}:${wallet.address}:${kind}`.toLowerCase();
+    }
+
+    function loadToks() {
+      try {
+        toks = JSON.parse(localStorage.getItem(sk("tokens")) || "[]");
+      } catch {
+        toks = [];
+      }
+    }
+
+    function saveToks() {
+      localStorage.setItem(sk("tokens"), JSON.stringify(toks));
+    }
+
+    async function refreshAll() {
+      await checkNet();
+
+      try {
+        const balance = await provider.getBalance(wallet.address);
+        $("nBal").textContent = fmt(ethers.utils.formatEther(balance), 8);
+      } catch (error) {
+        $("nBal").textContent = "0";
+        toast("RPC belum aktif: " + error.message);
+      }
+
+      await renderTokens(true);
+      await syncExplorerHistory(true);
+    }
+
+    async function renderTokens(updateBalance = false) {
+      const box = $("tokens");
+      box.innerHTML = "";
+
+      const nativeName = net.symbol === "ARS" ? "Aerost Coin" : net.symbol + " Native Coin";
+
+      box.appendChild(tokenCard({
+        type: "native",
+        name: nativeName,
+        symbol: net.symbol,
+        sub: "Native coin, gas fee, posisi paling atas",
+        balance: $("nBal").textContent + " " + net.symbol
+      }));
+
+      loadToks();
+
+      for (const token of toks) {
+        if (updateBalance) {
+          try {
+            const contract = new ethers.Contract(token.address, ABI, provider);
+            const rawBalance = await contract.balanceOf(wallet.address);
+
+            token.balance = fmt(ethers.utils.formatUnits(rawBalance, token.decimals), 8);
+          } catch {
+            token.balance = "N/A";
+          }
+        }
+
+        box.appendChild(tokenCard({
+          ...token,
+          type: "erc20",
+          sub: token.address,
+          balance: (token.balance || "Refresh") + " " + token.symbol
+        }));
+      }
+
+      saveToks();
+    }
+
+    function tokenCard(token) {
+      const button = document.createElement("button");
+
+      button.className = "token";
+      button.onclick = () => tokenDetail(token);
+
+      button.innerHTML = `
+        <div class="ico">${esc(token.symbol || "TKN").slice(0, 3)}</div>
+        <div>
+          <b>${esc(token.name)}</b>
+          <div class="sub mono">${esc(token.sub || "")}</div>
+        </div>
+        <div class="tb">${esc(token.balance || "")}</div>
+      `;
+
+      return button;
+    }
+
+    function tokenDetail(token) {
+      modal(
+        token.symbol + " Detail",
+        `
+          <div class="panel">
+            <div class="lab">${esc(token.name)}</div>
+            <div class="val">${esc(token.symbol)}</div>
+            ${
+              token.type === "erc20"
+                ? `<div class="lab">Contract</div><div class="val mono">${esc(token.address)}</div>`
+                : "<p class='hint'>Native token untuk gas fee dan transaksi utama.</p>"
+            }
+          </div>
+
+          <div class="g2">
+            <button class="btn pri" onclick="closeModal(); openSend('${token.type}', '${esc(token.address || "")}')">Kirim</button>
+            <button class="btn grn" onclick="closeModal(); openReceive()">Terima</button>
+          </div>
+        `
+      );
+    }
+
+    function hist() {
+      try {
+        return JSON.parse(localStorage.getItem(sk("hist")) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHist(list) {
+      localStorage.setItem(sk("hist"), JSON.stringify(list));
+    }
+
+    function addHist(item) {
+      const list = hist();
+
+      list.unshift(item);
+      saveHist(dedupeHist(list).slice(0, 120));
+      renderHist();
+    }
+
+    function dedupeHist(list) {
+      const seen = new Set();
+
+      return list.filter((item) => {
+        const key = (item.hash || "").toLowerCase() + ":" + (item.symbol || "");
+
+        if (seen.has(key)) {
+          return false;
+        }
+
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function renderHist(scroll = false) {
+      renderLocalHist(scroll);
+
+      if (scroll) {
+        syncExplorerHistory(true);
+      }
+    }
+
+    function renderLocalHist(scroll = false) {
+      const box = $("hist");
+      const list = hist();
+
+      if (!list.length) {
+        box.innerHTML = "<div class='hint'>Belum ada transaksi. Tekan Refresh untuk ambil riwayat dari explorer jika API tersedia.</div>";
+        return;
+      }
+
+      box.innerHTML = "";
+
+      list.forEach((item) => {
+        const button = document.createElement("button");
+        const directionText = item.direction === "in"
+          ? `Terima ${esc(item.amount)} ${esc(item.symbol)} dari ${short(item.from)}`
+          : `Kirim ${esc(item.amount)} ${esc(item.symbol)} ke ${short(item.to)}`;
+
+        button.className = "hi";
+        button.onclick = () => histDetail(item);
+
+        button.innerHTML = `
+          <b>${directionText}</b>
+          <span>${esc(item.time)}</span>
+          <span class="mono">${esc(item.hash)}</span>
+        `;
+
+        box.appendChild(button);
+      });
+
+      if (scroll) {
+        box.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+
+    async function syncExplorerHistory(silent = false) {
+      if (histSyncing || !wallet || !net) return;
+
+      const api = explorerApi();
+
+      if (!api) {
+        if (!silent) {
+          toast("Explorer API belum diisi, riwayat on-chain tidak bisa discan.");
+        }
+
+        return;
+      }
+
+      histSyncing = true;
+
+      try {
+        let added = 0;
+        const list = hist();
+
+        const txs = await fetchJson(api + "/addresses/" + wallet.address + "/transactions");
+        const txItems = (txs.items || txs || []).slice(0, 40);
+
+        for (const tx of txItems) {
+          const value = String(tx.value || "0");
+
+          if (value === "0") continue;
+
+          const hash = tx.hash || tx.transaction_hash;
+
+          if (!hash) continue;
+
+          const from = addrOf(tx.from);
+          const to = addrOf(tx.to);
+          const direction = to && to.toLowerCase() === wallet.address.toLowerCase() ? "in" : "out";
+
+          const record = {
+            external: true,
+            direction,
+            hash,
+            to: to || wallet.address,
+            from: from || "",
+            amount: fmt(ethers.utils.formatEther(value), 8),
+            symbol: net.symbol,
+            time: timeOf(tx.timestamp)
+          };
+
+          if (!list.some((item) => (item.hash || "").toLowerCase() === hash.toLowerCase() && item.symbol === record.symbol)) {
+            list.push(record);
+            added++;
+          }
+        }
+
+        try {
+          const transfers = await fetchJson(api + "/addresses/" + wallet.address + "/token-transfers?type=ERC-20");
+          const transferItems = (transfers.items || transfers || []).slice(0, 60);
+
+          for (const transfer of transferItems) {
+            const token = transfer.token || {};
+            const total = transfer.total || {};
+            const hash = transfer.transaction_hash || transfer.tx_hash || transfer.hash;
+
+            if (!hash) continue;
+
+            const from = addrOf(transfer.from);
+            const to = addrOf(transfer.to);
+            const symbol = token.symbol || transfer.token_symbol || "TOKEN";
+            const decimals = +(total.decimals || token.decimals || 18);
+            const value = String(total.value || transfer.value || "0");
+
+            if (value === "0") continue;
+
+            const direction = to && to.toLowerCase() === wallet.address.toLowerCase() ? "in" : "out";
+
+            const record = {
+              external: true,
+              direction,
+              hash,
+              to: to || wallet.address,
+              from: from || "",
+              amount: fmt(ethers.utils.formatUnits(value, decimals), 8),
+              symbol,
+              time: timeOf(transfer.timestamp)
+            };
+
+            if (!list.some((item) => (item.hash || "").toLowerCase() === hash.toLowerCase() && item.symbol === record.symbol)) {
+              list.push(record);
+              added++;
+            }
+          }
+        } catch {
+          // Token transfer scan boleh gagal tanpa menggagalkan native history.
+        }
+
+        list.sort((a, b) => new Date(b.time) - new Date(a.time));
+        saveHist(dedupeHist(list).slice(0, 120));
+        renderLocalHist(false);
+
+        if (added && !silent) {
+          toast("✅ Riwayat on-chain masuk: " + added);
+        }
+      } catch (error) {
+        if (!silent) {
+          toast("Gagal sync riwayat explorer: " + error.message);
+        }
+      } finally {
+        histSyncing = false;
+      }
+    }
+
+    function explorerApi() {
+      const api = (net.api || "").trim().replace(/\/$/, "");
+
+      if (api) return api;
+      if (+net.chainId === 8453) return "https://base.blockscout.com/api/v2";
+      if (+net.chainId === 84532) return "https://base-sepolia.blockscout.com/api/v2";
+
+      return "";
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw Error("HTTP " + response.status);
+      }
+
+      return response.json();
+    }
+
+    function addrOf(value) {
+      return (value && (value.hash || value.address)) || value || "";
+    }
+
+    function timeOf(timestamp) {
+      return timestamp ? new Date(timestamp).toLocaleString() : new Date().toLocaleString();
+    }
+
+    function histDetail(item) {
+      modal(
+        "Detail Transaksi",
+        `
+          <div class="grid">
+            <div>
+              <div class="lab">Arah</div>
+              <div class="val">${item.direction === "in" ? "Masuk / Receive" : "Keluar / Send"}</div>
+            </div>
+
+            <div>
+              <div class="lab">Pengirim</div>
+              <div class="val mono">${esc(item.from || "")}</div>
+            </div>
+
+            <div>
+              <div class="lab">Penerima</div>
+              <div class="val mono">${esc(item.to)}</div>
+            </div>
+
+            <div>
+              <div class="lab">Jumlah</div>
+              <div class="val">${esc(item.amount)} ${esc(item.symbol)}</div>
+            </div>
+
+            <div>
+              <div class="lab">TX Hash</div>
+              <div class="val mono"><a class="link" target="_blank" href="${txlink(item.hash)}">${esc(item.hash)}</a></div>
+            </div>
+
+            <div>
+              <div class="lab">Waktu Lokal</div>
+              <div class="val">${esc(item.time)}</div>
+            </div>
+          </div>
+        `
+      );
+    }
+
+    function openSend(prefType = "", prefAddress = "") {
+      loadToks();
+
+      const options = [
+        `<option value="native">${net.symbol} - Native</option>`,
+        ...toks.map((token, index) => `<option value="tok:${index}">${esc(token.symbol)} - ${esc(token.name)}</option>`)
+      ].join("");
+
+      modal(
+        "Kirim Asset",
+        `
+          <div class="grid">
+            <div>
+              <div class="lab">Alamat Penerima</div>
+              <div class="g2">
+                <input id="sto" class="inp mono" placeholder="0x...">
+                <button class="btn" onclick="openScan()">Scan QR</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="lab">Pilih Asset</div>
+              <select id="sasset" class="sel" onchange="sendBal()">${options}</select>
+            </div>
+
+            <div>
+              <div class="lab">Amount <span id="sbal" style="float: right; color: var(--green);">Saldo...</span></div>
+              <input id="samt" class="inp" inputmode="decimal" placeholder="0.0" oninput="validSend()">
+            </div>
+
+            <button id="snext" class="btn pri" disabled onclick="confirmSend()">Lanjut Konfirmasi</button>
+          </div>
+        `
+      );
+
+      setTimeout(() => {
+        if (prefType === "erc20" && prefAddress) {
+          const index = toks.findIndex((token) => token.address.toLowerCase() === prefAddress.toLowerCase());
+
+          if (index >= 0) {
+            $("sasset").value = "tok:" + index;
+          }
+        }
+
+        sendBal();
+        validSend();
+      }, 80);
+    }
+
+    async function sendBal() {
+      const label = $("sbal");
+
+      try {
+        if ($("sasset").value === "native") {
+          const balance = await provider.getBalance(wallet.address);
+          label.textContent = "Saldo: " + fmt(ethers.utils.formatEther(balance), 8) + " " + net.symbol;
+        } else {
+          const index = +$("sasset").value.split(":")[1];
+          const token = toks[index];
+          const contract = new ethers.Contract(token.address, ABI, provider);
+          const balance = await contract.balanceOf(wallet.address);
+
+          label.textContent = "Saldo: " + fmt(ethers.utils.formatUnits(balance, token.decimals), 8) + " " + token.symbol;
+        }
+      } catch {
+        label.textContent = "Saldo gagal dibaca";
+      }
+
+      validSend();
+    }
+
+    function asset() {
+      const value = $("sasset").value;
+
+      if (value === "native") {
+        return {
+          type: "native",
+          symbol: net.symbol,
+          decimals: 18,
+          name: net.symbol + " Native Coin"
+        };
+      }
+
+      const index = +value.split(":")[1];
+
+      return {
+        type: "erc20",
+        ...toks[index]
+      };
+    }
+
+    function validSend() {
+      const button = $("snext");
+
+      if (!button) return;
+
+      button.disabled = !(
+        ethers.utils.isAddress($("sto")?.value.trim() || "") &&
+        Number($("samt")?.value) > 0
+      );
+    }
+
+    function confirmSend() {
+      const selectedAsset = asset();
+
+      pending = {
+        to: $("sto").value.trim(),
+        amount: $("samt").value.trim(),
+        asset: selectedAsset
+      };
+
+      modal(
+        "Konfirmasi",
+        `
+          <div class="panel">
+            <p>Apakah Anda akan mengirim <b>${esc(pending.amount)} ${esc(selectedAsset.symbol)}</b> ke:</p>
+            <div class="val mono">${esc(pending.to)}</div>
+            <p class="hint">Pastikan alamat penerima benar. Transaksi yang sudah fix tidak bisa dibatalkan.</p>
+          </div>
+
+          <div class="g2">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn pri" onclick="gasModal()">Yes</button>
+          </div>
+        `
+      );
+    }
+
+    async function gasModal() {
+      modal(
+        "Estimasi Gas Fee",
+        `
+          <div class="panel">
+            <div class="lab">Menghitung estimasi</div>
+            <div class="val">Loading...</div>
+          </div>
+        `
+      );
+
+      try {
+        const signer = wallet.connect(provider);
+        const selectedAsset = pending.asset;
+        let gasLimit;
+
+        if (selectedAsset.type === "native") {
+          gasLimit = await signer.estimateGas({
+            to: pending.to,
+            value: ethers.utils.parseEther(pending.amount)
+          });
+        } else {
+          const contract = new ethers.Contract(selectedAsset.address, ABI, signer);
+
+          gasLimit = await contract.estimateGas.transfer(
+            pending.to,
+            ethers.utils.parseUnits(pending.amount, selectedAsset.decimals)
+          );
+        }
+
+        const gasPrice = await provider.getGasPrice();
+
+        pending.gl = gasLimit;
+        pending.gp = gasPrice;
+
+        $("mb").innerHTML = `
+          <div class="fee">
+            <button id="fmin" class="fbtn" onclick="fee('min')">
+              <b>Low Min</b><br>${ethers.utils.formatUnits(gasPrice.mul(80).div(100), "gwei")} gwei
+            </button>
+
+            <button id="fnormal" class="fbtn act" onclick="fee('normal')">
+              <b>Normal</b><br>${ethers.utils.formatUnits(gasPrice, "gwei")} gwei
+            </button>
+
+            <button id="ffast" class="fbtn" onclick="fee('fast')">
+              <b>Fast</b><br>${ethers.utils.formatUnits(gasPrice.mul(130).div(100), "gwei")} gwei
+            </button>
+          </div>
+
+          <div>
+            <div class="lab">Custom Gas Limit</div>
+            <input id="glim" class="inp" value="${gasLimit.toString()}">
+          </div>
+
+          <div class="panel">
+            <div class="lab">Estimasi</div>
+            <div id="gest" class="val">${gest("normal")}</div>
+          </div>
+
+          <button id="sendfix" class="btn pri" onclick="sendFix()">Kirim Done Fix</button>
+        `;
+      } catch (error) {
+        $("mb").innerHTML = `
+          <div class="panel secret">
+            <div class="lab">Gagal hitung gas</div>
+            <div class="val">${esc(error.message)}</div>
+          </div>
+        `;
+      }
+    }
+
+    function gp(mode) {
+      const gasPrice = pending.gp;
+
+      if (mode === "min") return gasPrice.mul(80).div(100);
+      if (mode === "fast") return gasPrice.mul(130).div(100);
+
+      return gasPrice;
+    }
+
+    function fee(mode) {
+      feeMode = mode;
+
+      ["min", "normal", "fast"].forEach((item) => {
+        $("f" + item)?.classList.toggle("act", item === mode);
+      });
+
+      $("gest").textContent = gest(mode);
+    }
+
+    function gest(mode) {
+      const gasLimit = ethers.BigNumber.from($("glim")?.value || pending.gl);
+      const gasPrice = gp(mode);
+      const totalFee = gasLimit.mul(gasPrice);
+
+      return `Gas limit ${gasLimit}, estimasi fee ${ethers.utils.formatEther(totalFee)} ${net.symbol}`;
+    }
+
+    async function sendFix() {
+      const button = $("sendfix");
+
+      button.disabled = true;
+      button.textContent = "Mengirim...";
+
+      try {
+        const signer = wallet.connect(provider);
+        const selectedAsset = pending.asset;
+        const gasLimit = ethers.BigNumber.from($("glim").value);
+        const gasPrice = gp(feeMode);
+        let tx;
+
+        if (selectedAsset.type === "native") {
+          tx = await signer.sendTransaction({
+            to: pending.to,
+            value: ethers.utils.parseEther(pending.amount),
+            gasLimit,
+            gasPrice
+          });
+        } else {
+          const contract = new ethers.Contract(selectedAsset.address, ABI, signer);
+
+          tx = await contract.transfer(
+            pending.to,
+            ethers.utils.parseUnits(pending.amount, selectedAsset.decimals),
+            { gasLimit, gasPrice }
+          );
+        }
+
+        const time = new Date().toLocaleString();
+
+        addHist({
+          hash: tx.hash,
+          direction: "out",
+          from: wallet.address,
+          to: pending.to,
+          amount: fmt(pending.amount, 8),
+          symbol: selectedAsset.symbol,
+          time
+        });
+
+        modal(
+          "Transaksi Berhasil",
+          `
+            <div class="panel">
+              <p>Anda berhasil mengirim <b>${esc(pending.amount)} ${esc(selectedAsset.symbol)}</b> ke:</p>
+              <div class="val mono">${esc(pending.to)}</div>
+
+              <div class="lab">TX Hash</div>
+              <div class="val mono"><a class="link" href="${txlink(tx.hash)}" target="_blank">${esc(tx.hash)}</a></div>
+
+              <p class="hint">Waktu lokal: ${esc(time)}. Transaksi tidak bisa dibatalkan.</p>
+            </div>
+
+            <button class="btn pri" onclick="closeModal(); renderHist(true); refreshAll()">Lihat Riwayat</button>
+          `
+        );
+
+        setTimeout(() => {
+          closeModal();
+          renderHist(true);
+          refreshAll();
+        }, 7000);
+      } catch (error) {
+        toast("Gagal kirim: " + error.message);
+        button.disabled = false;
+        button.textContent = "Kirim Done Fix";
+      }
+    }
+
+    function openReceive() {
+      modal(
+        "Terima / Request QR",
+        `
+          <div class="grid">
+            <div id="qr" class="qr"></div>
+
+            <div>
+              <div class="lab">Alamat Wallet</div>
+              <div class="val mono">${esc(wallet.address)}</div>
+            </div>
+
+            <div>
+              <div class="lab">Request Amount ${esc(net.symbol)}</div>
+              <input id="ramt" class="inp" inputmode="decimal" placeholder="Contoh: 3" oninput="drawQR()">
+            </div>
+
+            <p id="rh" class="hint">QR tanpa amount hanya alamat. Jika amount diisi, QR berubah jadi request pembayaran.</p>
+
+            <div class="g2">
+              <button class="btn grn" onclick="copy(wallet.address, 'Alamat disalin')">Copy Address</button>
+              <button class="btn pri" onclick="downloadQR()">Download QR</button>
+            </div>
+          </div>
+        `
+      );
+
+      setTimeout(drawQR, 60);
+    }
+
+    function qrPayload() {
+      const amount = $("ramt")?.value.trim();
+
+      if (!amount || Number(amount) <= 0) {
+        return wallet.address;
+      }
+
+      try {
+        return `ethereum:${wallet.address}@${net.chainId}?value=${ethers.utils.parseEther(amount).toString()}`;
+      } catch {
+        return wallet.address;
+      }
+    }
+
+    function drawQR() {
+      const qr = $("qr");
+
+      if (!qr) return;
+
+      qr.innerHTML = "";
+
+      new QRCode(qr, {
+        text: qrPayload(),
+        width: 210,
+        height: 210,
+        colorDark: "#050917",
+        colorLight: "#fff"
+      });
+
+      const amount = $("ramt")?.value.trim();
+
+      $("rh").textContent = amount
+        ? `QR request untuk ${amount} ${net.symbol}.`
+        : "QR tanpa amount hanya alamat.";
+    }
+
+    function downloadQR() {
+      const canvas = $("qr").querySelector("canvas");
+      const img = $("qr").querySelector("img");
+      const url = canvas ? canvas.toDataURL("image/png") : img?.src;
+
+      if (!url) {
+        toast("QR belum ada.");
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Aerost_Receive_" + short(wallet.address) + ".png";
+      link.click();
+
+      toast("✅ QR diunduh");
+    }
+
+    function openTokenImport() {
+      modal(
+        "Import ERC20 Token",
+        `
+          <div class="grid">
+            <div>
+              <div class="lab">Alamat Contract</div>
+              <input id="tc" class="inp mono" placeholder="0x..." oninput="readMetaSoon()">
+            </div>
+
+            <div class="g2">
+              <div>
+                <div class="lab">Nama</div>
+                <input id="tn" class="inp" readonly>
+              </div>
+
+              <div>
+                <div class="lab">Simbol</div>
+                <input id="ts" class="inp" readonly>
+              </div>
+            </div>
+
+            <div>
+              <div class="lab">Desimal</div>
+              <input id="td" class="inp" readonly>
+            </div>
+
+            <button id="tbtn" class="btn pri" disabled onclick="addToken()">Import Token</button>
+          </div>
+        `
+      );
+    }
+
+    let metaT = null;
+
+    function readMetaSoon() {
+      clearTimeout(metaT);
+      metaT = setTimeout(readMeta, 450);
+    }
+
+    async function readMeta() {
+      const address = $("tc").value.trim();
+
+      $("tbtn").disabled = true;
+
+      if (!ethers.utils.isAddress(address)) return;
+
+      try {
+        const contract = new ethers.Contract(address, ABI, provider);
+        const metadata = await Promise.all([
+          contract.name(),
+          contract.symbol(),
+          contract.decimals()
+        ]);
+
+        $("tn").value = metadata[0];
+        $("ts").value = metadata[1];
+        $("td").value = metadata[2];
+        $("tbtn").disabled = false;
+
+        toast("✅ Metadata terbaca");
+      } catch {
+        toast("Gagal baca token");
+      }
+    }
+
+    function addToken() {
+      const address = $("tc").value.trim();
+      const name = $("tn").value;
+      const symbol = $("ts").value;
+      const decimals = +$("td").value;
+
+      loadToks();
+
+      if (toks.some((token) => token.address.toLowerCase() === address.toLowerCase())) {
+        toast("Token sudah ada");
+        return;
+      }
+
+      toks.push({ address, name, symbol, decimals });
+      saveToks();
+      closeModal();
+      renderTokens(true);
+      toast("✅ Token diimport");
+    }
+
+    async function scanTokens() {
+      if (!net.api) {
+        toast("Blockscout API belum diisi.");
+        return;
+      }
+
+      try {
+        const response = await fetch(net.api.replace(/\/$/, "") + "/addresses/" + wallet.address + "/tokens?type=ERC-20");
+
+        if (!response.ok) {
+          throw Error(response.status);
+        }
+
+        const data = await response.json();
+        const items = data.items || data;
+        let added = 0;
+
+        loadToks();
+
+        for (const item of items) {
+          const token = item.token || item;
+          const address = token.address || token.contract_address;
+          const symbol = token.symbol;
+          const name = token.name || symbol;
+          const decimals = +(token.decimals || 18);
+
+          if (
+            address &&
+            ethers.utils.isAddress(address) &&
+            !toks.some((stored) => stored.address.toLowerCase() === address.toLowerCase())
+          ) {
+            toks.push({ address, name, symbol, decimals });
+            added++;
+          }
+        }
+
+        saveToks();
+        renderTokens(true);
+        toast(added ? `✅ ${added} token ditemukan` : "Tidak ada token baru");
+      } catch {
+        toast("Scan gagal. Import manual.");
+      }
+    }
+
+    function openSettings() {
+      const phrase = wallet.mnemonic?.phrase || "Phrase tidak tersedia karena masuk dari private key.";
+
+      modal(
+        "Pengaturan Wallet",
+        `
+          <div class="grid">
+            <div class="panel">
+              <div class="title">
+                <h2>Backup</h2>
+              </div>
+
+              <div class="lab">Address</div>
+              <div class="val mono">${esc(wallet.address)}</div>
+
+              <div class="lab">Phrase</div>
+              <div id="sp" class="val mono blur">${esc(phrase)}</div>
+
+              <div class="lab">Private Key</div>
+              <div id="sk" class="val mono blur">${esc(wallet.privateKey)}</div>
+
+              <div class="g2">
+                <button class="btn" onclick="$('sp').classList.toggle('blur'); $('sk').classList.toggle('blur')">Lihat/Hide</button>
+                <button class="btn grn" onclick="downloadBackup()">Download Backup</button>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="title">
+                <h2>Advanced</h2>
+              </div>
+
+              <div class="grid">
+                <button class="btn" onclick="closeModal(); openRpc()">Pengaturan RPC</button>
+                <button class="btn" onclick="localStorage.removeItem(sk('hist')); renderHist(); toast('Riwayat bersih')">Bersihkan Riwayat</button>
+                <button class="btn" onclick="localStorage.removeItem(sk('tokens')); toks = []; renderTokens(); toast('Token import bersih')">Bersihkan Token</button>
+                <button class="btn red" onclick="logout()">Logout</button>
+              </div>
+            </div>
+          </div>
+        `,
+        true
+      );
+    }
+
+    function logout() {
+      localStorage.removeItem(sk("tokens"));
+      localStorage.removeItem(sk("hist"));
+      sessionStorage.removeItem(K.sess);
+
+      wallet = null;
+      toks = [];
+
+      closeModal();
+
+      $("sub").textContent = "Session wallet aktif sampai tab ditutup/logout. Token disimpan sampai logout.";
+
+      show("gate");
+      toast("Logout selesai. Secret session dan token dibersihkan.");
+    }
+
+    function openRpc() {
+      editingRpcId = null;
+
+      const cards = rpcs().map((rpc) => rpcCard(rpc)).join("");
+
+      modal(
+        "Pengaturan RPC",
+        `
+          <div class="grid">
+            ${cards}
+
+            <div class="panel">
+              <div class="title">
+                <h2 id="rpcFormTitle">Add RPC</h2>
+                <button class="btn small-btn" onclick="resetRpcForm()">Reset</button>
+              </div>
+
+              <div class="rpc-form-grid">
+                <input id="rn" class="inp" placeholder="Nama network">
+                <input id="rs" class="inp" placeholder="Symbol, contoh ARS">
+
+                <input id="rc" class="inp" placeholder="Chain ID" inputmode="numeric">
+                <input id="ru" class="inp mono" placeholder="RPC URL">
+
+                <input id="re" class="inp mono" placeholder="Explorer URL">
+                <input id="ra" class="inp mono" placeholder="Blockscout API, optional">
+
+                <button id="rpcSaveBtn" class="btn pri wide-field" onclick="saveRpcForm()">Simpan RPC</button>
+              </div>
+            </div>
+          </div>
+        `,
+        true
+      );
+    }
+
+    function rpcCard(rpc) {
+      const active = net?.id === rpc.id;
+
+      return `
+        <div class="panel">
+          <div class="title">
+            <h2>${esc(rpc.name)}</h2>
+
+            <div class="rpc-card-actions">
+              <button class="btn small-btn ${active ? "grn" : ""}" onclick="selRpc('${esc(rpc.id)}')">
+                ${active ? "Aktif" : "Pakai"}
+              </button>
+
+              <button class="btn small-btn" onclick="fillRpcForm('${esc(rpc.id)}')">
+                Edit
+              </button>
+
+              <button class="btn small-btn red" onclick="deleteRpc('${esc(rpc.id)}')">
+                Hapus
+              </button>
+            </div>
+          </div>
+
+          <div class="sub mono">${esc(rpc.rpcUrl)}</div>
+          <div class="hint">Chain ID ${esc(rpc.chainId)} | ${esc(rpc.symbol)}</div>
+          ${rpc.explorerUrl ? `<div class="sub mono">Explorer: ${esc(rpc.explorerUrl)}</div>` : ""}
+          ${rpc.api ? `<div class="sub mono">API: ${esc(rpc.api)}</div>` : ""}
+        </div>
+      `;
+    }
+
+    function fillRpcForm(id) {
+      const rpc = rpcs().find((item) => item.id === id);
+
+      if (!rpc) {
+        toast("RPC tidak ditemukan.");
+        return;
+      }
+
+      editingRpcId = id;
+
+      $("rpcFormTitle").textContent = "Edit RPC";
+      $("rpcSaveBtn").textContent = "Update RPC";
+
+      $("rn").value = rpc.name || "";
+      $("ru").value = rpc.rpcUrl || "";
+      $("rc").value = rpc.chainId || "";
+      $("rs").value = rpc.symbol || "";
+      $("re").value = rpc.explorerUrl || "";
+      $("ra").value = rpc.api || "";
+
+      $("rn").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function resetRpcForm() {
+      editingRpcId = null;
+
+      $("rpcFormTitle").textContent = "Add RPC";
+      $("rpcSaveBtn").textContent = "Simpan RPC";
+
+      ["rn", "ru", "rc", "rs", "re", "ra"].forEach((id) => {
+        $(id).value = "";
+      });
+    }
+
+    function saveRpcForm() {
+      const name = $("rn").value.trim();
+      const rpcUrl = $("ru").value.trim();
+      const chainId = +$("rc").value;
+      const symbol = $("rs").value.trim() || "ARS";
+      const explorerUrl = $("re").value.trim();
+      const api = $("ra").value.trim();
+
+      if (!name || !rpcUrl || !chainId) {
+        toast("Nama, RPC URL, Chain ID wajib.");
+        return;
+      }
+
+      const list = rpcs();
+
+      if (editingRpcId) {
+        const index = list.findIndex((item) => item.id === editingRpcId);
+
+        if (index < 0) {
+          toast("RPC yang diedit tidak ditemukan.");
+          return;
+        }
+
+        list[index] = {
+          ...list[index],
+          name,
+          rpcUrl,
+          chainId,
+          symbol,
+          explorerUrl,
+          api
+        };
+
+        saveRpcs(list);
+
+        if (localStorage.getItem(K.sel) === editingRpcId) {
+          loadNet();
+          checkNet();
+
+          if (wallet) {
+            enter();
+          }
+        }
+
+        toast("✅ RPC diupdate.");
+        openRpc();
+        return;
+      }
+
+      const id = "rpc-" + Date.now();
+
+      list.push({
+        id,
+        name,
+        rpcUrl,
+        chainId,
+        symbol,
+        explorerUrl,
+        api
+      });
+
+      saveRpcs(list);
+      localStorage.setItem(K.sel, id);
+
+      loadNet();
+      checkNet();
+
+      if (wallet) {
+        enter();
+      }
+
+      toast("✅ RPC disimpan dan dipakai.");
+      openRpc();
+    }
+
+    function deleteRpc(id) {
+      const list = rpcs();
+
+      if (list.length <= 1) {
+        toast("Minimal harus ada 1 RPC.");
+        return;
+      }
+
+      const nextList = list.filter((item) => item.id !== id);
+
+      if (nextList.length === list.length) {
+        toast("RPC tidak ditemukan.");
+        return;
+      }
+
+      if (localStorage.getItem(K.sel) === id) {
+        localStorage.setItem(K.sel, nextList[0].id);
+      }
+
+      saveRpcs(nextList);
+      loadNet();
+      checkNet();
+
+      if (wallet) {
+        enter();
+      }
+
+      toast("RPC dihapus.");
+      openRpc();
+    }
+
+    function selRpc(id) {
+      localStorage.setItem(K.sel, id);
+      loadNet();
+      closeModal();
+      checkNet();
+
+      if (wallet) {
+        enter();
+      }
+
+      toast("Network diganti");
+    }
+
+    function openScan() {
+      modal(
+        "Scan QR",
+        `
+          <video id="vid" class="video" autoplay muted playsinline></video>
+
+          <div class="scanTools">
+            <button class="btn" onclick="document.getElementById('qrfile').click()">Import QR Image</button>
+            <button class="btn" onclick="startScan()">Restart Camera</button>
+          </div>
+
+          <input id="qrfile" class="fileInp" type="file" accept="image/*" onchange="importQrImage(this)">
+
+          <p class="hint">Kotak kamera dibuat 1:1 supaya QR lebih mudah masuk frame. Jika kamera tidak membaca QR, import gambar QR atau paste manual.</p>
+
+          <textarea id="manual" class="ta" placeholder="Paste QR/alamat/ethereum:..."></textarea>
+          <button class="btn pri" onclick="useManual()">Pakai Data Manual</button>
+        `
+      );
+
+      startScan();
+    }
+
+    async function startScan() {
+      if (!("BarcodeDetector" in window) || !navigator.mediaDevices?.getUserMedia) {
+        toast("Scanner tidak didukung. Paste manual.");
+        return;
+      }
+
+      try {
+        stopScan();
+
+        const detector = new BarcodeDetector({ formats: ["qr_code"] });
+        const video = $("vid");
+
+        vidStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
+        });
+
+        video.srcObject = vidStream;
+
+        scanTimer = setInterval(async () => {
+          try {
+            const codes = await detector.detect(video);
+
+            if (codes.length) {
+              stopScan();
+              useQR(codes[0].rawValue);
+            }
+          } catch {
+            // Camera scan loop boleh gagal sesekali.
+          }
+        }, 700);
+      } catch (error) {
+        toast("Kamera gagal: " + error.message);
+      }
+    }
+
+    async function importQrImage(input) {
+      const file = input.files && input.files[0];
+
+      if (!file) return;
+
+      stopScan();
+
+      try {
+        let text = "";
+
+        if ("BarcodeDetector" in window && window.createImageBitmap) {
+          const bitmap = await createImageBitmap(file);
+          const detector = new BarcodeDetector({ formats: ["qr_code"] });
+          const result = await detector.detect(bitmap);
+
+          if (result && result.length) {
+            text = result[0].rawValue;
+          }
+        }
+
+        if (!text && window.jsQR) {
+          text = await decodeQrCanvas(file);
+        }
+
+        if (!text) {
+          throw Error("QR tidak terbaca dari gambar. Coba crop lebih dekat atau pakai gambar lebih jelas.");
+        }
+
+        useQR(text);
+        toast("✅ QR image terbaca");
+      } catch (error) {
+        toast("Import QR gagal: " + error.message);
+        startScan();
+      } finally {
+        input.value = "";
+      }
+    }
+
+    function decodeQrCanvas(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+
+        img.onload = () => {
+          try {
+            const canvas = document.createElement("canvas");
+            const max = 1200;
+            const scale = Math.min(1, max / Math.max(img.width, img.height));
+
+            canvas.width = Math.max(1, Math.floor(img.width * scale));
+            canvas.height = Math.max(1, Math.floor(img.height * scale));
+
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const qr = jsQR(imageData.data, canvas.width, canvas.height);
+
+            URL.revokeObjectURL(url);
+            resolve(qr ? qr.data : "");
+          } catch (error) {
+            URL.revokeObjectURL(url);
+            reject(error);
+          }
+        };
+
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(Error("Gambar gagal dibuka"));
+        };
+
+        img.src = url;
+      });
+    }
+
+    function stopScan() {
+      if (scanTimer) {
+        clearInterval(scanTimer);
+      }
+
+      scanTimer = null;
+
+      if (vidStream) {
+        vidStream.getTracks().forEach((track) => track.stop());
+        vidStream = null;
+      }
+    }
+
+    function useManual() {
+      const text = $("manual").value.trim();
+
+      if (text) {
+        stopScan();
+        useQR(text);
+      }
+    }
+
+    function useQR(text) {
+      const parsed = parseURI(text);
+
+      closeModal();
+      openSend();
+
+      setTimeout(() => {
+        $("sto").value = parsed.to || "";
+        $("samt").value = parsed.amount || "";
+        validSend();
+      }, 100);
+
+      toast("QR terbaca");
+    }
+
+    function parseURI(text) {
+      if (ethers.utils.isAddress(text)) {
+        return { to: text };
+      }
+
+      const match = text.match(/^ethereum:([^@?]+)(?:@(\d+))?(?:\?(.*))?/i);
+
+      if (!match) {
+        return { to: text };
+      }
+
+      const params = new URLSearchParams(match[3] || "");
+      let amount = "";
+
+      if (params.get("value")) {
+        try {
+          amount = ethers.utils.formatEther(params.get("value"));
+        } catch {
+          amount = "";
+        }
+      }
+
+      return {
+        to: match[1],
+        amount
+      };
+    }
+
+    function modal(title, body, wide = false) {
+      $("mt").textContent = title;
+      $("mb").innerHTML = body;
+      $("modal").classList.toggle("wide", Boolean(wide));
+      $("back").classList.add("show");
+    }
+
+    function closeModal() {
+      stopScan();
+      $("back").classList.remove("show");
+      $("mb").innerHTML = "";
+    }
+
+    function toast(message) {
+      const item = document.createElement("div");
+
+      item.className = "toast";
+      item.textContent = message;
+
+      $("toastbox").appendChild(item);
+
+      setTimeout(() => item.classList.add("show"), 20);
+
+      setTimeout(() => {
+        item.classList.remove("show");
+
+        setTimeout(() => item.remove(), 250);
+      }, 3600);
+    }
+
+    async function copy(text, message = "Disalin") {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const area = document.createElement("textarea");
+
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+
+      toast("📋 " + message);
+    }
+
+    function downloadBackup() {
+      const phrase = wallet.mnemonic?.phrase || "Phrase tidak tersedia.";
+
+      const content = `=== AEROST TESTNET WALLET BACKUP ===
+
+ADDRESS:
+${wallet.address}
+
+RECOVERY PHRASE:
+${phrase}
+
+PRIVATE KEY:
+${wallet.privateKey}
+
+NETWORK:
+${net.name} | Chain ID ${net.chainId}
+
+Simpan offline. Jangan bagikan phrase/private key.
+`;
+
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "Aerost_Wallet_" + wallet.address.slice(0, 8) + ".txt";
+      link.click();
+
+      URL.revokeObjectURL(url);
+      toast("✅ Backup diunduh");
+    }
+
+    function txlink(hash) {
+      return (net.explorerUrl || "").replace(/\/$/, "") + "/tx/" + hash;
+    }
+
+    function short(address) {
+      return address ? address.slice(0, 6) + "..." + address.slice(-4) : "...";
+    }
+
+    function fmt(value, decimals = 8) {
+      let text = String(value ?? "0").trim();
+
+      if (!text) {
+        return "0";
+      }
+
+      if (/[eE]/.test(text)) {
+        const number = Number(text);
+
+        if (!Number.isFinite(number)) {
+          return text.slice(0, 18);
+        }
+
+        text = number.toFixed(decimals);
+      }
+
+      const negative = text.startsWith("-");
+
+      if (negative) {
+        text = text.slice(1);
+      }
+
+      const parts = text.split(".");
+      let integer = parts[0] || "0";
+      let fraction = (parts[1] || "").slice(0, decimals);
+
+      fraction = fraction.replace(/0+$/, "");
+      integer = integer.replace(/^0+(?=\d)/, "");
+      integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+      return (negative ? "-" : "") + integer + (fraction ? "." + fraction : "");
+    }
+
+    function esc(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>
