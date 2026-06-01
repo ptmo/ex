@@ -641,6 +641,13 @@
       font-size: 13px;
     }
 
+    .ico img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+    }
+
     @media (max-width: 860px) {
       .dash,
       .g2,
@@ -1217,7 +1224,13 @@
       button.onclick = () => tokenDetail(token);
 
       button.innerHTML = `
-        <div class="ico">${esc(token.symbol || "TKN").slice(0, 3)}</div>
+        <div class="ico">
+  ${
+    t.logoURI
+      ? `<img src="${esc(t.logoURI)}" alt="${esc(t.symbol || "Token")}" onerror="this.remove()">`
+      : esc(t.symbol || "TKN").slice(0, 3)
+  }
+</div>
         <div>
           <b>${esc(token.name)}</b>
           <div class="sub mono">${esc(token.sub || "")}</div>
@@ -1248,6 +1261,30 @@
           </div>
         `
       );
+    }
+
+    async function getTokenMetaFromExplorer(address) {
+  const api = explorerApi() || "https://base.blockscout.com/api/v2";
+
+  try {
+    const res = await fetch(api + "/tokens/" + address);
+
+    if (!res.ok) {
+      throw new Error("Token API error");
+    }
+
+    const data = await res.json();
+
+    return {
+      name: data.name || "",
+      symbol: data.symbol || "",
+      decimals: Number(data.decimals || 18),
+      logoURI: data.icon_url || "",
+      price: data.exchange_rate || ""
+    };
+  } catch (err) {
+    return null;
+  }
     }
 
     function hist() {
@@ -1926,30 +1963,50 @@
     }
 
     async function readMeta() {
-      const address = $("tc").value.trim();
+  const address = $("tc").value.trim();
 
-      $("tbtn").disabled = true;
+  $("tbtn").disabled = true;
 
-      if (!ethers.utils.isAddress(address)) return;
+  if (!ethers.utils.isAddress(address)) {
+    return;
+  }
 
-      try {
-        const contract = new ethers.Contract(address, ABI, provider);
-        const metadata = await Promise.all([
-          contract.name(),
-          contract.symbol(),
-          contract.decimals()
-        ]);
+  try {
+    const explorerMeta = await getTokenMetaFromExplorer(address);
 
-        $("tn").value = metadata[0];
-        $("ts").value = metadata[1];
-        $("td").value = metadata[2];
-        $("tbtn").disabled = false;
+    if (explorerMeta) {
+      $("tn").value = explorerMeta.name;
+      $("ts").value = explorerMeta.symbol;
+      $("td").value = explorerMeta.decimals;
 
-        toast("✅ Metadata terbaca");
-      } catch {
-        toast("Gagal baca token");
-      }
+      window.lastTokenLogoURI = explorerMeta.logoURI || "";
+      window.lastTokenPrice = explorerMeta.price || "";
+
+      $("tbtn").disabled = false;
+      toast("✅ Metadata + logo terbaca dari explorer");
+      return;
     }
+
+    const contract = new ethers.Contract(address, ABI, provider);
+    const result = await Promise.all([
+      contract.name(),
+      contract.symbol(),
+      contract.decimals()
+    ]);
+
+    $("tn").value = result[0];
+    $("ts").value = result[1];
+    $("td").value = result[2];
+
+    window.lastTokenLogoURI = "";
+    window.lastTokenPrice = "";
+
+    $("tbtn").disabled = false;
+    toast("✅ Metadata terbaca dari contract");
+  } catch (err) {
+    toast("Gagal baca metadata token");
+  }
+}
 
     function addToken() {
       const address = $("tc").value.trim();
@@ -1964,11 +2021,14 @@
         return;
       }
 
-      toks.push({ address, name, symbol, decimals });
-      saveToks();
-      closeModal();
-      renderTokens(true);
-      toast("✅ Token diimport");
+      toks.push({
+  address,
+  name,
+  symbol,
+  decimals,
+  logoURI: window.lastTokenLogoURI || "",
+  price: window.lastTokenPrice || ""
+});
     }
 
     async function scanTokens() {
