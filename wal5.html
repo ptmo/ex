@@ -847,9 +847,7 @@
                     <button class="btn small-btn" onclick="scanTokens()">Scan Token</button>
                   </div>
                 </div>
-
-                <p class="hint">Native coin selalu paling atas. Token bernilai jual tidak bisa dipastikan murni dari RPC. Jika Blockscout API tersedia, scan token bisa dicoba. Jika belum terindeks, import contract manual.</p>
-
+                
                 <div id="tokens" class="grid" style="margin-top: 12px;"></div>
               </div>
             </section>
@@ -1184,7 +1182,6 @@
         type: "native",
         name: nativeName,
         symbol: net.symbol,
-        sub: "Native coin, gas fee, posisi paling atas",
         balance: $("nBal").textContent + " " + net.symbol
       }));
 
@@ -1241,7 +1238,7 @@
             ${
               token.type === "erc20"
                 ? `<div class="lab">Contract</div><div class="val mono">${esc(token.address)}</div>`
-                : "<p class='hint'>Native token untuk gas fee dan transaksi utama.</p>"
+                : "<p class='hint'>Native Coin untuk gas fee dan transaksi utama.</p>"
             }
           </div>
 
