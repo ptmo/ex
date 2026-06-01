@@ -1179,6 +1179,64 @@
       await syncExplorerHistory(true);
     }
 
+    function svgLogo(svg) {
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+
+function nativeLogoURI() {
+  const symbol = String(net.symbol || "").toUpperCase();
+  const name = String(net.name || "").toLowerCase();
+
+  // Aerost wajib paten
+  if (symbol === "ARS" || name.includes("aerost")) {
+    return svgLogo(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+        <rect width="256" height="256" rx="70" fill="#2d63ef"/>
+        <circle cx="128" cy="128" r="72" fill="#47d391" opacity=".9"/>
+        <text x="128" y="147" text-anchor="middle" font-family="Arial" font-size="58" font-weight="900" fill="white">ARS</text>
+      </svg>
+    `);
+  }
+
+  // Kalau user isi logoURI di RPC, pakai itu dulu
+  if (net.logoURI) {
+    return net.logoURI;
+  }
+
+  // Auto guess logo chain dari DefiLlama icons
+  const slug = nativeChainSlug();
+
+  if (slug) {
+    return `https://icons.llamao.fi/icons/chains/rsz_${slug}.jpg`;
+  }
+
+  return "";
+}
+
+function nativeChainSlug() {
+  const symbol = String(net.symbol || "").toUpperCase();
+  const name = String(net.name || "").toLowerCase();
+  const chainId = Number(net.chainId);
+
+  if (chainId === 1 || name.includes("ethereum")) return "ethereum";
+  if (chainId === 8453 || name.includes("base")) return "base";
+  if (chainId === 56 || symbol === "BNB" || name.includes("bnb") || name.includes("binance")) return "bsc";
+  if (chainId === 137 || symbol === "MATIC" || name.includes("polygon")) return "polygon";
+  if (chainId === 42161 || name.includes("arbitrum")) return "arbitrum";
+  if (chainId === 10 || name.includes("optimism")) return "optimism";
+  if (chainId === 43114 || symbol === "AVAX" || name.includes("avalanche")) return "avalanche";
+  if (chainId === 250 || symbol === "FTM" || name.includes("fantom")) return "fantom";
+  if (chainId === 25 || symbol === "CRO" || name.includes("cronos")) return "cronos";
+  if (chainId === 100 || name.includes("gnosis")) return "gnosis";
+
+  return name
+    .replace("mainnet", "")
+    .replace("network", "")
+    .replace("chain", "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
     async function renderTokens(updateBalance = false) {
       const box = $("tokens");
       box.innerHTML = "";
@@ -1186,11 +1244,12 @@
       const nativeName = net.symbol === "ARS" ? "Aerost Coin" : net.symbol + " Native Coin";
 
       box.appendChild(tokenCard({
-        type: "native",
-        name: nativeName,
-        symbol: net.symbol,
-        balance: $("nBal").textContent + " " + net.symbol
-      }));
+  type: "native",
+  name: nativeName,
+  symbol: net.symbol,
+  logoURI: nativeLogoURI(),
+  balance: $("nBal").textContent + " " + net.symbol
+}));
 
       loadToks();
 
