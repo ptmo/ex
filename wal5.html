@@ -1218,27 +1218,29 @@
     }
 
     function tokenCard(token) {
-      const button = document.createElement("button");
+  const button = document.createElement("button");
 
-      button.className = "token";
-      button.onclick = () => tokenDetail(token);
+  button.className = "token";
+  button.onclick = () => tokenDetail(token);
 
-      button.innerHTML = `
-        <div class="ico">
-  ${
-    t.logoURI
-      ? `<img src="${esc(t.logoURI)}" alt="${esc(t.symbol || "Token")}" onerror="this.remove()">`
-      : esc(t.symbol || "TKN").slice(0, 3)
-  }
-</div>
-        <div>
-          <b>${esc(token.name)}</b>
-          <div class="sub mono">${esc(token.sub || "")}</div>
-        </div>
-        <div class="tb">${esc(token.balance || "")}</div>
-      `;
+  const iconHtml = token.logoURI
+    ? `<img src="${esc(token.logoURI)}" alt="${esc(token.symbol || "Token")}" onerror="this.remove()">`
+    : esc(token.symbol || "TKN").slice(0, 3);
 
-      return button;
+  button.innerHTML = `
+    <div class="ico">
+      ${iconHtml}
+    </div>
+
+    <div>
+      <b>${esc(token.name)}</b>
+      <div class="sub mono">${esc(token.sub || "")}</div>
+    </div>
+
+    <div class="tb">${esc(token.balance || "")}</div>
+  `;
+
+  return button;
     }
 
     function tokenDetail(token) {
@@ -2009,26 +2011,31 @@
 }
 
     function addToken() {
-      const address = $("tc").value.trim();
-      const name = $("tn").value;
-      const symbol = $("ts").value;
-      const decimals = +$("td").value;
+  const address = $("tc").value.trim();
+  const name = $("tn").value;
+  const symbol = $("ts").value;
+  const decimals = +$("td").value;
 
-      loadToks();
+  loadToks();
 
-      if (toks.some((token) => token.address.toLowerCase() === address.toLowerCase())) {
-        toast("Token sudah ada");
-        return;
-      }
+  if (toks.some((token) => token.address.toLowerCase() === address.toLowerCase())) {
+    toast("Token sudah ada");
+    return;
+  }
 
-      toks.push({
-  address,
-  name,
-  symbol,
-  decimals,
-  logoURI: window.lastTokenLogoURI || "",
-  price: window.lastTokenPrice || ""
-});
+  toks.push({
+    address,
+    name,
+    symbol,
+    decimals,
+    logoURI: window.lastTokenLogoURI || "",
+    price: window.lastTokenPrice || ""
+  });
+
+  saveToks();
+  closeModal();
+  renderTokens(true);
+  toast("✅ Token diimport");
     }
 
     async function scanTokens() {
