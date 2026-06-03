@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tangkap Bakso Kabur</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, #ffedd5, transparent 35%),
+        radial-gradient(circle at bottom right, #bae6fd, transparent 35%),
+        linear-gradient(135deg, #fff7ed, #f8fafc);
+      color: #111827;
+    }
+
+    .warung-semesta {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .kartu-komedi {
+      width: min(100%, 560px);
+      text-align: center;
+      padding: 28px;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.16);
+      backdrop-filter: blur(14px);
+      z-index: 2;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 7vw, 48px);
+      line-height: 1.05;
+    }
+
+    p {
+      color: #475569;
+      line-height: 1.6;
+      margin: 14px 0 0;
+    }
+
+    .panel-angka {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 22px 0;
+    }
+
+    .kotak-angka {
+      padding: 12px 16px;
+      border-radius: 18px;
+      background: #f1f5f9;
+      font-weight: 800;
+    }
+
+    button {
+      border: 0;
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: #111827;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 12px 30px rgba(17, 24, 39, 0.22);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .makhluk-lapar {
+      position: fixed;
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      font-size: 44px;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      z-index: 5;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+      animation: jogetBakso 0.42s infinite alternate ease-in-out;
+    }
+
+    @keyframes jogetBakso {
+      from {
+        transform: rotate(-8deg) scale(1);
+      }
+      to {
+        transform: rotate(8deg) scale(1.08);
+      }
+    }
+
+    .pesan-gaib {
+      min-height: 28px;
+      margin-top: 12px;
+      color: #be123c;
+      font-weight: 800;
+    }
+
+    .hilang-dulu {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="warung-semesta">
+    <section class="kartu-komedi">
+      <h1>🍜 Tangkap Bakso Kabur</h1>
+      <p>
+        Klik bakso untuk dapat poin. Jangan klik sandal.
+        Sandal tidak bersalah, tapi efeknya menyakitkan.
+      </p>
+
+      <div class="panel-angka">
+        <div class="kotak-angka">Poin: <span id="poinBakso">0</span></div>
+        <div class="kotak-angka">Waktu: <span id="waktuMie">30</span>s</div>
+        <div class="kotak-angka">Level lapar: <span id="levelLapar">Santai</span></div>
+      </div>
+
+      <button onclick="mulaiPerburuanBakso()">Mulai Kejar Bakso</button>
+
+      <div id="pesanDariDapur" class="pesan-gaib">
+        Bakso sedang pemanasan...
+      </div>
+    </section>
+  </div>
+
+  <script>
+    let poinBaksoSuci = 0;
+    let detikYangMulaiLelah = 30;
+    let gameSedangNgopi = false;
+    let timerDapur = null;
+    let intervalMakhluk = null;
+
+    const daftarKomentarAbsurd = [
+      "Bakso berhasil diamankan. Negara aman.",
+      "Anda menangkap bakso dengan penuh kewibawaan.",
+      "Bakso panik, kuah ikut gemetar.",
+      "Poin naik. Martabak iri.",
+      "Bakso berkata: saya hanya ingin hidup tenang."
+    ];
+
+    const daftarKomentarSandal = [
+      "Itu sandal, bukan bakso. Fokus, wahai manusia lapar.",
+      "Sandal terklik. Harga diri turun 3 poin.",
+      "Sandal melayang, poin menghilang.",
+      "Anda baru saja menggigit realita.",
+      "Sandal tidak enak meski tampilannya percaya diri."
+    ];
+
+    function angkaRandomTapiSopan(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pilihKalimatDapur(listKalimat) {
+      return listKalimat[Math.floor(Math.random() * listKalimat.length)];
+    }
+
+    function updatePanelWarung() {
+      document.getElementById("poinBakso").textContent = poinBaksoSuci;
+      document.getElementById("waktuMie").textContent = detikYangMulaiLelah;
+
+      const level =
+        poinBaksoSuci >= 30 ? "Legenda Kuah" :
+        poinBaksoSuci >= 20 ? "Pemburu Pentol" :
+        poinBaksoSuci >= 10 ? "Mulai Lapar" :
+        "Santai";
+
+      document.getElementById("levelLapar").textContent = level;
+    }
+
+    function bersihkanMakhlukLiar() {
+      document.querySelectorAll(".makhluk-lapar").forEach((anakBakso) => {
+        anakBakso.remove();
+      });
+    }
+
+    function munculkanObjekRandom() {
+      if (!gameSedangNgopi) return;
+
+      const benda = document.createElement("div");
+      benda.className = "makhluk-lapar";
+
+      const apakahIniSandalBerkedokBakso = Math.random() < 0.23;
+      benda.textContent = apakahIniSandalBerkedokBakso ? "🩴" : "🍜";
+
+      const batasX = window.innerWidth - 90;
+      const batasY = window.innerHeight - 90;
+
+      benda.style.left = angkaRandomTapiSopan(8, Math.max(8, batasX)) + "px";
+      benda.style.top = angkaRandomTapiSopan(8, Math.max(8, batasY)) + "px";
+
+      benda.onclick = function () {
+        if (apakahIniSandalBerkedokBakso) {
+          poinBaksoSuci = Math.max(0, poinBaksoSuci - 3);
+          document.getElementById("pesanDariDapur").textContent =
+            pilihKalimatDapur(daftarKomentarSandal);
+        } else {
+          poinBaksoSuci += 2;
+          document.getElementById("pesanDariDapur").textContent =
+            pilihKalimatDapur(daftarKomentarAbsurd);
+        }
+
+        updatePanelWarung();
+        benda.remove();
+      };
+
+      document.body.appendChild(benda);
+
+      setTimeout(() => {
+        if (benda.parentNode) benda.remove();
+      }, 1100);
+    }
+
+    function mulaiPerburuanBakso() {
+      poinBaksoSuci = 0;
+      detikYangMulaiLelah = 30;
+      gameSedangNgopi = true;
+
+      bersihkanMakhlukLiar();
+      updatePanelWarung();
+
+      document.getElementById("pesanDariDapur").textContent =
+        "Bakso kabur. Kejar sebelum dia buka cabang sendiri.";
+
+      clearInterval(timerDapur);
+      clearInterval(intervalMakhluk);
+
+      timerDapur = setInterval(() => {
+        detikYangMulaiLelah--;
+        updatePanelWarung();
+
+        if (detikYangMulaiLelah <= 0) {
+          selesaiDenganDrama();
+        }
+      }, 1000);
+
+      intervalMakhluk = setInterval(() => {
+        munculkanObjekRandom();
+      }, 650);
+    }
+
+    function selesaiDenganDrama() {
+      gameSedangNgopi = false;
+      clearInterval(timerDapur);
+      clearInterval(intervalMakhluk);
+      bersihkanMakhlukLiar();
+
+      let vonisAkhir =
+        poinBaksoSuci >= 35 ? "Anda resmi menjadi Menteri Perbaksoan Nasional." :
+        poinBaksoSuci >= 20 ? "Lumayan. Bakso takut, sandal hormat." :
+        poinBaksoSuci >= 10 ? "Cukup. Tapi kuah masih meragukan Anda." :
+        "Bakso menang. Anda disuruh latihan klik lagi.";
+
+      document.getElementById("pesanDariDapur").textContent =
+        `Game selesai. Poin akhir: ${poinBaksoSuci}. ${vonisAkhir}`;
+    }
+  </script>
+</body>
+</html>
