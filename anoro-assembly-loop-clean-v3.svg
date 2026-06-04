@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="512" height="512" viewBox="0 0 512 512"
+     role="img" aria-label="Anoro assembly animation loop clean">
+  <title>Anoro Assembly Animation Loop Clean</title>
+  <desc>
+    Clean looping Anoro assembly animation. The mark starts empty, the center crystal drops in,
+    the right pyramid slides in, then the left pyramid slides in, and the full logo holds briefly
+    before the sequence loops again.
+  </desc>
+
+  <defs>
+    <radialGradient id="anoroGlowLoop" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f80000" stop-opacity="0.26"/>
+      <stop offset="56%" stop-color="#f80000" stop-opacity="0.09"/>
+      <stop offset="100%" stop-color="#f80000" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="anoroSoftGlowLoop" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 0.48 0" result="redBlur"/>
+      <feMerge>
+        <feMergeNode in="redBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+      <![CDATA[
+        .piece {
+          fill: #f80000;
+          filter: url(#anoroSoftGlowLoop);
+        }
+        .ghost {
+          fill: #f80000;
+          opacity: .045;
+        }
+      ]]>
+    </style>
+  </defs>
+
+  <!-- master loop -->
+  <animate id="loop" attributeName="opacity" values="1;1" dur="7.2s" repeatCount="indefinite"/>
+
+  <!-- soft atmosphere only -->
+  <circle cx="256" cy="256" r="168" fill="url(#anoroGlowLoop)">
+    <animate attributeName="opacity"
+             begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+             values="0.18;0.34;0.56;0.48;0.26;0.18"
+             keyTimes="0;0.14;0.42;0.62;0.84;1"/>
+  </circle>
+
+  <!-- faint final silhouette -->
+  <g opacity=".22">
+    <path class="ghost" d="M245 54 Q256 34 267 54 L351 221 Q363 246 351 271 L267 458 Q256 478 245 458 L161 271 Q149 246 161 221 Z"/>
+    <path class="ghost" d="M56 420 L190 420 Q204 420 198 408 L134 272 Q126 258 118 272 L48 408 Q42 420 56 420 Z"/>
+    <path class="ghost" d="M322 420 L456 420 Q470 420 464 408 L394 272 Q386 258 378 272 L314 408 Q308 420 322 420 Z"/>
+  </g>
+
+  <g id="anoroMark">
+    <!-- subtle premium hold motion after logo forms -->
+    <animateTransform attributeName="transform" type="translate"
+                      begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+                      values="0 0;0 0;0 -2.5;0 0;0 1.8;0 0"
+                      keyTimes="0;0.46;0.64;0.78;0.90;1"/>
+    <animateTransform attributeName="transform" type="scale"
+                      begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+                      values="1;1;1.008;1;0.996;1"
+                      keyTimes="0;0.46;0.64;0.78;0.90;1"
+                      additive="sum"/>
+
+    <!-- Center crystal -->
+    <g>
+      <path class="piece" d="M245 54 Q256 34 267 54 L351 221 Q363 246 351 271 L267 458 Q256 478 245 458 L161 271 Q149 246 161 221 Z"/>
+      <animate attributeName="opacity"
+               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               values="0;0;1;1;1;0"
+               keyTimes="0;0.02;0.17;0.98;0.999;1"/>
+      <animateTransform attributeName="transform" type="translate"
+               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               values="0,-180;0,-180;0,10;0,0;0,0;0,-180"
+               keyTimes="0;0.02;0.15;0.17;0.98;1"
+               calcMode="spline"
+               keySplines="0 0 1 1;0.18 0.88 0.32 1;0.20 0.80 0.28 1;0 0 1 1;0 0 1 1"/>
+    </g>
+
+    <!-- Right pyramid -->
+    <g>
+      <path class="piece" d="M322 420 L456 420 Q470 420 464 408 L394 272 Q386 258 378 272 L314 408 Q308 420 322 420 Z"/>
+      <animate attributeName="opacity"
+               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               values="0;0;1;1;1;0"
+               keyTimes="0;0.20;0.32;0.98;0.999;1"/>
+      <animateTransform attributeName="transform" type="translate"
+               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               values="150,0;150,0;-8,0;0,0;0,0;150,0"
+               keyTimes="0;0.20;0.30;0.32;0.98;1"
+               calcMode="spline"
+               keySplines="0 0 1 1;0.18 0.88 0.32 1;0.20 0.80 0.28 1;0 0 1 1;0 0 1 1"/>
+    </g>
+
+    <!-- Left pyramid -->
+    <g>
+      <path class="piece" d="M56 420 L190 420 Q204 420 198 408 L134 272 Q126 258 118 272 L48 408 Q42 420 56 420 Z"/>
+      <animate attributeName="opacity"
+               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               values="0;0;1;1;1;0"
+               keyTimes="0;0.34;0.46;0.98;0.999;1"/>
+      <animateTransform attributeName="transform" type="translate"
+               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               values="-150,0;-150,0;8,0;0,0;0,0;-150,0"
+               keyTimes="0;0.34;0.44;0.46;0.98;1"
+               calcMode="spline"
+               keySplines="0 0 1 1;0.18 0.88 0.32 1;0.20 0.80 0.28 1;0 0 1 1;0 0 1 1"/>
+    </g>
+  </g>
+</svg>
