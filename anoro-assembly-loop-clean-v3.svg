@@ -49,7 +49,7 @@
   <!-- soft atmosphere only -->
   <circle cx="256" cy="256" r="168" fill="url(#anoroGlowLoop)">
     <animate attributeName="opacity"
-             begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+             begin="loop.begin" dur="4s" repeatCount="indefinite"
              values="0.18;0.34;0.56;0.48;0.26;0.18"
              keyTimes="0;0.14;0.42;0.62;0.84;1"/>
   </circle>
@@ -64,7 +64,7 @@
   <g id="anoroMark">
     <!-- subtle premium hold motion after logo forms -->
     <animateTransform attributeName="transform" type="translate"
-                      begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+                      begin="loop.begin" dur="4s" repeatCount="indefinite"
                       values="0 0;0 0;0 -2.5;0 0;0 1.8;0 0"
                       keyTimes="0;0.46;0.64;0.78;0.90;1"/>
     <animateTransform attributeName="transform" type="scale"
@@ -81,7 +81,7 @@
                values="0;0;1;1;1;0"
                keyTimes="0;0.02;0.17;0.98;0.999;1"/>
       <animateTransform attributeName="transform" type="translate"
-               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               begin="loop.begin" dur="4s" repeatCount="indefinite"
                values="0,-180;0,-180;0,10;0,0;0,0;0,-180"
                keyTimes="0;0.02;0.15;0.17;0.98;1"
                calcMode="spline"
@@ -92,11 +92,11 @@
     <g>
       <path class="piece" d="M322 420 L456 420 Q470 420 464 408 L394 272 Q386 258 378 272 L314 408 Q308 420 322 420 Z"/>
       <animate attributeName="opacity"
-               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               begin="loop.begin" dur="4s" repeatCount="indefinite"
                values="0;0;1;1;1;0"
                keyTimes="0;0.20;0.32;0.98;0.999;1"/>
       <animateTransform attributeName="transform" type="translate"
-               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               begin="loop.begin" dur="4s" repeatCount="indefinite"
                values="150,0;150,0;-8,0;0,0;0,0;150,0"
                keyTimes="0;0.20;0.30;0.32;0.98;1"
                calcMode="spline"
@@ -107,11 +107,11 @@
     <g>
       <path class="piece" d="M56 420 L190 420 Q204 420 198 408 L134 272 Q126 258 118 272 L48 408 Q42 420 56 420 Z"/>
       <animate attributeName="opacity"
-               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               begin="loop.begin" dur="4s" repeatCount="indefinite"
                values="0;0;1;1;1;0"
                keyTimes="0;0.34;0.46;0.98;0.999;1"/>
       <animateTransform attributeName="transform" type="translate"
-               begin="loop.begin" dur="7.2s" repeatCount="indefinite"
+               begin="loop.begin" dur="4s" repeatCount="indefinite"
                values="-150,0;-150,0;8,0;0,0;0,0;-150,0"
                keyTimes="0;0.34;0.44;0.46;0.98;1"
                calcMode="spline"
