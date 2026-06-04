@@ -1,5 +1,5 @@
 <svg viewBox="0 0 512 512" aria-hidden="true">
-    <path fill="currentColor"
+    <path fill="#f80000"
       d="M245 54
          Q256 34 267 54
          L351 221
@@ -10,7 +10,7 @@
          Q149 246 161 221
          Z" />
 
-    <path fill="currentColor"
+    <path fill="#f80000"
       d="M56 420
          L190 420
          Q204 420 198 408
@@ -20,7 +20,7 @@
          Q42 420 56 420
          Z" />
 
-    <path fill="currentColor"
+    <path fill="#f80000"
       d="M322 420
          L456 420
          Q470 420 464 408
