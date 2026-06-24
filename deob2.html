@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Unminifier Pro - World Class Tool</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-html.min.js"></script>
+
+    <style>
+        :root {
+            /* Dark Mode Palette (Default) */
+            --bg: #000000;
+            --surface: #111111;
+            --card: #18181b;
+            --border: #27272a;
+            --text: #fafafa;
+            --text-dim: #a1a1aa;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --accent: #2563eb;
+            --success: #10b981;
+            --danger: #f43f5e;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --font-ui: 'Inter', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .light-mode {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --card: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-dim: #64748b;
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-ui);
+            transition: var(--transition);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Nav Header */
+        nav {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            border-bottom: 1px solid var(--border);
+            background: rgba(var(--bg), 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        /* Cards Styles */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Input Customization */
+        .editor-wrapper {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .editor-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        textarea {
+            width: 100%;
+            height: 450px;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            padding: 20px;
+            font-family: var(--font-code);
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+            resize: none;
+        }
+
+        /* Buttons & Actions */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            color: white;
+            justify-content: center;
+            padding: 16px;
+            font-size: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .icon-btn:hover {
+            color: var(--text);
+            background: var(--border);
+            border-color: var(--text-dim);
+        }
+
+        /* Custom Options Bar */
+        .options-bar {
+            background: var(--surface);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        select {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Toast UI */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .toast {
+            background: #18181b;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #3f3f46;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: toastIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary);
+        }
+
+        /* File Upload Hidden Input */
+        #fileInput { display: none; }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .tool-grid { grid-template-columns: 1fr; }
+            .editor-wrapper textarea { height: 350px; }
+            nav { padding: 0 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <i class="fa-solid fa-bolt-auto"></i>
+            <span>NEXUS <span style="font-weight: 300; opacity: 0.7;">PRO</span></span>
+        </div>
+        <div class="btn-group">
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fa-solid fa-moon"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div class="options-bar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim);">LANGUAGE</span>
+                <select id="langSelect">
+                    <option value="js">JavaScript / JSON</option>
+                    <option value="css">CSS / SCSS</option>
+                    <option value="html">HTML Layout</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="processBtn" style="min-width: 200px;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Transform Code
+            </button>
+        </div>
+
+        <div class="tool-grid">
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-terminal"></i> SOURCE INPUT</div>
+                    <div class="btn-group">
+                        <label for="fileInput" class="icon-btn" title="Upload File">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </label>
+                        <input type="file" id="fileInput" accept=".js,.css,.html,.txt,.json">
+                        <button class="icon-btn" id="clearBtn" title="Clear All">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="inputCode" placeholder="// Paste your minified or obfuscated code here..."></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-code"></i> BEAUTIFIED OUTPUT</div>
+                    <div class="btn-group">
+                        <button class="icon-btn" id="copyBtn" title="Copy Code">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <button class="icon-btn" id="downloadBtn" title="Download File">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="outputCode" placeholder="// Results will appear here..." readonly></textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const inputCode = document.getElementById('inputCode');
+        const outputCode = document.getElementById('outputCode');
+        const fileInput = document.getElementById('fileInput');
+        const langSelect = document.getElementById('langSelect');
+
+        // 1. Dual Mode Theme Logic
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            showToast(isLight ? 'Light Mode Activated' : 'Dark Mode Activated');
+        });
+
+        // 2. File Upload Logic
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                inputCode.value = e.target.result;
+                showToast('File uploaded successfully!', 'fa-cloud-check');
+            };
+            reader.readAsText(file);
+        });
+
+        // 3. Main Processing Logic
+        document.getElementById('processBtn').addEventListener('click', () => {
+            const code = inputCode.value.trim();
+            if (!code) return showToast('Input cannot be empty!', 'fa-circle-exmark');
+
+            const lang = langSelect.value;
+            const options = { 
+                indent_size: 4, 
+                space_in_empty_paren: true,
+                unescape_strings: true // Basic deobfuscation for hex/unicode
+            };
+
+            try {
+                let beautified = "";
+                if(lang === 'js') beautified = js_beautify(code, options);
+                else if(lang === 'css') beautified = css_beautify(code, options);
+                else beautified = html_beautify(code, options);
+
+                outputCode.value = beautified;
+                showToast('Code successfully beautified!');
+            } catch (err) {
+                showToast('Processing error!', 'fa-triangle-exclamation');
+            }
+        });
+
+        // 4. Utility Features
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            if (!outputCode.value) return;
+            navigator.clipboard.writeText(outputCode.value);
+            showToast('Copied to clipboard!');
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            inputCode.value = "";
+            outputCode.value = "";
+            showToast('Editors cleared');
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (!outputCode.value) return;
+            const blob = new Blob([outputCode.value], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nexus_export.${langSelect.value}`;
+            a.click();
+            showToast('Download started');
+        });
+
+        // 5. World Class Toast System
+        function showToast(msg, icon = 'fa-check-circle') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> ${msg}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 500);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
