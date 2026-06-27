@@ -580,6 +580,26 @@
         const langSelect = document.getElementById('langSelect');
         const toastContainer = document.getElementById('toast-container'); // (DIPERBAIKI) Deklarasi Wajib Ditambahkan
 
+        // --- INISIALISASI EDITOR CODEMIRROR (WAJIB DITAMBAHKAN) ---
+        const cmOptions = {
+            theme: 'dracula',
+            lineWrapping: true,
+            scrollbarStyle: "null"
+        };
+
+        const inputEditor = CodeMirror.fromTextArea(document.getElementById('inputCode'), {
+            ...cmOptions,
+            mode: 'javascript',
+            lineNumbers: false // Kolom Input TANPA angka
+        });
+
+        const outputEditor = CodeMirror.fromTextArea(document.getElementById('outputCode'), {
+            ...cmOptions,
+            mode: 'javascript',
+            lineNumbers: true, // Kolom Output DENGAN angka
+            readOnly: true
+        });
+
         // --- FITUR LOCAL STORAGE UNTUK TEMA (DIPERBAIKI) ---
         // 1. Cek penyimpanan lokal saat halaman dimuat
         const savedTheme = localStorage.getItem('nexus_theme');
