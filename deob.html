@@ -485,7 +485,7 @@
             }
             .CodeMirror { height: 350px; }
         }
-        }
+        
     </style>
 </head>
 <body>
@@ -604,17 +604,17 @@
             readOnly: true
         });
 
-        // --- 1. FITUR LOCAL STORAGE UNTUK TEMA ---
+                // --- 1. FITUR LOCAL STORAGE UNTUK TEMA ---
         const savedTheme = localStorage.getItem('nexus_theme');
         if (savedTheme === 'light') {
             body.classList.add('light-mode');
             themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
 
-        // --- 2. INISIALISASI EDITOR CODEMIRROR DINAMIS ---
+        // --- 2. INISIALISASI EDITOR CODEMIRROR DINAMIS (YANG DOUBLE DIHAPUS) ---
         const isLightActive = body.classList.contains('light-mode');
         const cmOptions = {
-            theme: isLightActive ? 'default' : 'dracula', // Otomatis 'default' untuk terang, 'dracula' untuk gelap
+            theme: isLightActive ? 'default' : 'dracula', 
             lineWrapping: true,
             scrollbarStyle: "null"
         };
