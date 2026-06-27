@@ -423,7 +423,7 @@
     object-fit: contain;
         }
 
-        /* CodeMirror Premium Integration */
+        /* CodeMirror Premium Integration & Dynamic Theme */
         .editor-wrapper textarea { display: none; }
         
         .CodeMirror {
@@ -431,12 +431,12 @@
             font-family: var(--font-code);
             font-size: 14px;
             line-height: 1.6;
-            background: #000;
+            background-color: transparent !important;
             padding: 10px;
         }
 
         .CodeMirror-gutters {
-            background: transparent !important;
+            background-color: transparent !important;
             border-right: 1px solid var(--border) !important;
             padding-right: 8px;
         }
@@ -444,27 +444,11 @@
         .CodeMirror-linenumber {
             color: var(--text-dim) !important;
         }
-
-        /* Memaksa CodeMirror mengikuti palet warna aplikasi */
-        .cm-s-dracula.CodeMirror {
-            background-color: var(--card) !important;
-            color: var(--text) !important;
-        }
-
-        .cm-s-dracula .CodeMirror-gutters {
-            background-color: var(--card) !important;
-            border-right: 1px solid var(--border) !important;
-        }
-
-        .cm-s-dracula .CodeMirror-linenumber {
-            color: var(--text-dim) !important;
-        }
         
-        /* Menyesuaikan kursor agar terlihat di mode terang maupun gelap */
-        .cm-s-dracula .CodeMirror-cursor {
+        .CodeMirror-cursor {
             border-left: 2px solid var(--text) !important;
         }
-
+        
         @media (max-width: 768px) {
             #toast-container {
                 bottom: 1rem;
@@ -620,21 +604,46 @@
             readOnly: true
         });
 
-        // --- FITUR LOCAL STORAGE UNTUK TEMA (DIPERBAIKI) ---
-        // 1. Cek penyimpanan lokal saat halaman dimuat
+        // --- 1. FITUR LOCAL STORAGE UNTUK TEMA ---
         const savedTheme = localStorage.getItem('nexus_theme');
         if (savedTheme === 'light') {
             body.classList.add('light-mode');
             themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
 
-        // 2. Dual Mode Theme Logic (Ditambahkan penyimpanan state)
+        // --- 2. INISIALISASI EDITOR CODEMIRROR DINAMIS ---
+        const isLightActive = body.classList.contains('light-mode');
+        const cmOptions = {
+            theme: isLightActive ? 'default' : 'dracula', // Otomatis 'default' untuk terang, 'dracula' untuk gelap
+            lineWrapping: true,
+            scrollbarStyle: "null"
+        };
+
+        const inputEditor = CodeMirror.fromTextArea(document.getElementById('inputCode'), {
+            ...cmOptions,
+            mode: 'javascript',
+            lineNumbers: false 
+        });
+
+        const outputEditor = CodeMirror.fromTextArea(document.getElementById('outputCode'), {
+            ...cmOptions,
+            mode: 'javascript',
+            lineNumbers: true, 
+            readOnly: true
+        });
+
+        // --- 3. DUAL MODE THEME LOGIC (TOGGLE) ---
         themeToggle.addEventListener('click', () => {
             body.classList.toggle('light-mode');
             const isLight = body.classList.contains('light-mode');
             
-            // Ubah Ikon
+            // Ubah Ikon Navigasi
             themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            
+            // Ubah Tema Teks CodeMirror secara Real-time
+            const newCmTheme = isLight ? 'default' : 'dracula';
+            inputEditor.setOption('theme', newCmTheme);
+            outputEditor.setOption('theme', newCmTheme);
             
             // Simpan ke Local Storage agar tidak hilang saat refresh
             localStorage.setItem('nexus_theme', isLight ? 'light' : 'dark');
