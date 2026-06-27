@@ -278,8 +278,7 @@
             background-color: var(--card); /* Menggunakan variabel yang benar */
             color: var(--text); /* Menggunakan variabel yang benar */
             padding: 1rem 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
+            border-radius: 15px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
@@ -289,14 +288,11 @@
             animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
             transform: translateX(100%);
-            border-right: 1px solid var(--border);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
         }
 
-        .toast.success { border-left-color: var(--success); }
+        .toast.success { border: 2px solid var(--success); }
         .toast.success i { color: var(--success); }
-        .toast.error { border-left-color: var(--danger); }
+        .toast.error { border: 2px solid var(--danger); }
         .toast.error i { color: var(--danger); }
 
         .toast.fade-out {
