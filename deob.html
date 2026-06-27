@@ -14,6 +14,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-html.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
 
     <style>
         :root {
@@ -416,6 +423,28 @@
     object-fit: contain;
         }
 
+        /* CodeMirror Premium Integration */
+        .editor-wrapper textarea { display: none; }
+        
+        .CodeMirror {
+            height: 450px;
+            font-family: var(--font-code);
+            font-size: 14px;
+            line-height: 1.6;
+            background: transparent !important;
+            padding: 10px;
+        }
+
+        .CodeMirror-gutters {
+            background: transparent !important;
+            border-right: 1px solid var(--border) !important;
+            padding-right: 8px;
+        }
+
+        .CodeMirror-linenumber {
+            color: var(--text-dim) !important;
+        }
+
         @media (max-width: 768px) {
             #toast-container {
                 bottom: 1rem;
@@ -450,6 +479,8 @@
             .custom-select-wrapper {
         margin-left: 12px;
             }
+            .CodeMirror { height: 350px; }
+        }
         }
     </style>
 </head>
@@ -575,31 +606,22 @@
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
-                inputCode.value = e.target.result;
+                inputEditor.setValue(e.target.result); // Menggunakan setValue
                 showToast('File uploaded successfully!', 'fa-cloud-arrow-up', 'success');
             };
             reader.readAsText(file);
-            
-            // Reset input file agar file yang sama bisa diupload ulang jika dibersihkan
             fileInput.value = '';
         });
 
         // 4. Main Processing Logic
         document.getElementById('processBtn').addEventListener('click', () => {
-            const code = inputCode.value.trim();
-            if (!code) {
-                return showToast('Input cannot be empty!', 'fa-circle-xmark', 'error');
-            }
+            const code = inputEditor.getValue().trim(); // Menggunakan getValue
+            if (!code) return showToast('Input cannot be empty!', 'fa-circle-xmark', 'error');
 
             const lang = langSelect.value;
-            const options = { 
-                indent_size: 4, 
-                space_in_empty_paren: true,
-                unescape_strings: true 
-            };
+            const options = { indent_size: 4, space_in_empty_paren: true, unescape_strings: true };
 
             try {
                 let beautified = "";
@@ -607,7 +629,7 @@
                 else if(lang === 'css') beautified = css_beautify(code, options);
                 else beautified = html_beautify(code, options);
 
-                outputCode.value = beautified;
+                outputEditor.setValue(beautified); // Menggunakan setValue
                 showToast('Code successfully beautified!', 'fa-wand-magic-sparkles', 'success');
             } catch (err) {
                 showToast('Processing error!', 'fa-triangle-exclamation', 'error');
@@ -616,21 +638,23 @@
 
         // 5. Utility Features
         document.getElementById('copyBtn').addEventListener('click', () => {
-            if (!outputCode.value) return showToast('No code to copy', 'fa-circle-xmark', 'error');
-            navigator.clipboard.writeText(outputCode.value);
+            const outCode = outputEditor.getValue();
+            if (!outCode) return showToast('No code to copy', 'fa-circle-xmark', 'error');
+            navigator.clipboard.writeText(outCode);
             showToast('Copied to clipboard!', 'fa-copy', 'success');
         });
 
         document.getElementById('clearBtn').addEventListener('click', () => {
-            if (!inputCode.value && !outputCode.value) return;
-            inputCode.value = "";
-            outputCode.value = "";
+            if (!inputEditor.getValue() && !outputEditor.getValue()) return;
+            inputEditor.setValue(""); 
+            outputEditor.setValue(""); 
             showToast('Editors cleared', 'fa-broom', 'success');
         });
 
         document.getElementById('downloadBtn').addEventListener('click', () => {
-            if (!outputCode.value) return showToast('No code to download', 'fa-circle-xmark', 'error');
-            const blob = new Blob([outputCode.value], { type: 'text/plain' });
+            const outCode = outputEditor.getValue();
+            if (!outCode) return showToast('No code to download', 'fa-circle-xmark', 'error');
+            const blob = new Blob([outCode], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -675,25 +699,23 @@ customSelectTrigger.addEventListener('click', (e) => {
 
 // Pilih Opsi
 customOptionElements.forEach(option => {
-    option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        
-        // Hapus class 'selected' dari semua opsi
-        customOptionElements.forEach(opt => opt.classList.remove('selected'));
-        
-        // Tambahkan class 'selected' ke opsi yang diklik
-        option.classList.add('selected');
-        
-        // Update teks pada tombol UI
-        customSelectLabel.textContent = option.textContent;
-        
-        // Update value pada <select> asli (Penting agar fitur Transform Code tetap jalan)
-        langSelect.value = option.getAttribute('data-value');
-        
-        // Tutup Dropdown
-        customSelectWrapper.classList.remove('open');
-    });
-});
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                customOptionElements.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                customSelectLabel.textContent = option.textContent;
+                
+                const selectedLang = option.getAttribute('data-value');
+                langSelect.value = selectedLang;
+                
+                // Update mode warna CodeMirror secara dinamis
+                let mode = selectedLang === 'html' ? 'htmlmixed' : selectedLang;
+                inputEditor.setOption("mode", mode);
+                outputEditor.setOption("mode", mode);
+                
+                customSelectWrapper.classList.remove('open');
+            });
+        });
 
 // Tutup Dropdown jika user klik di luar area
 document.addEventListener('click', (e) => {
