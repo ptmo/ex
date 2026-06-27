@@ -575,43 +575,23 @@
     <div id="toast-container"></div>
 
     <script>
-        // DOM Elements
+    // DOM Elements
         const body = document.body;
         const themeToggle = document.getElementById('themeToggle');
         const inputCode = document.getElementById('inputCode');
         const outputCode = document.getElementById('outputCode');
         const fileInput = document.getElementById('fileInput');
         const langSelect = document.getElementById('langSelect');
-        const toastContainer = document.getElementById('toast-container'); // (DIPERBAIKI) Deklarasi Wajib Ditambahkan
+        const toastContainer = document.getElementById('toast-container');
 
-        // --- INISIALISASI EDITOR CODEMIRROR (WAJIB DITAMBAHKAN) ---
-        const cmOptions = {
-            theme: 'dracula',
-            lineWrapping: true,
-            scrollbarStyle: "null"
-        };
-
-        const inputEditor = CodeMirror.fromTextArea(document.getElementById('inputCode'), {
-            ...cmOptions,
-            mode: 'javascript',
-            lineNumbers: false // Kolom Input TANPA angka
-        });
-
-        const outputEditor = CodeMirror.fromTextArea(document.getElementById('outputCode'), {
-            ...cmOptions,
-            mode: 'javascript',
-            lineNumbers: true, // Kolom Output DENGAN angka
-            readOnly: true
-        });
-
-                // --- 1. FITUR LOCAL STORAGE UNTUK TEMA ---
+        // --- 1. FITUR LOCAL STORAGE UNTUK TEMA ---
         const savedTheme = localStorage.getItem('nexus_theme');
         if (savedTheme === 'light') {
             body.classList.add('light-mode');
             themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
 
-        // --- 2. INISIALISASI EDITOR CODEMIRROR DINAMIS (YANG DOUBLE DIHAPUS) ---
+        // --- 2. INISIALISASI EDITOR CODEMIRROR DINAMIS ---
         const isLightActive = body.classList.contains('light-mode');
         const cmOptions = {
             theme: isLightActive ? 'default' : 'dracula', 
@@ -651,22 +631,22 @@
             showToast(isLight ? 'Light Mode Activated' : 'Dark Mode Activated', isLight ? 'fa-sun' : 'fa-moon', 'success');
         });
 
-        // 3. File Upload Logic
+        // 4. File Upload Logic
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                inputEditor.setValue(e.target.result); // Menggunakan setValue
+                inputEditor.setValue(e.target.result); 
                 showToast('File uploaded successfully!', 'fa-cloud-arrow-up', 'success');
             };
             reader.readAsText(file);
             fileInput.value = '';
         });
 
-        // 4. Main Processing Logic
+        // 5. Main Processing Logic
         document.getElementById('processBtn').addEventListener('click', () => {
-            const code = inputEditor.getValue().trim(); // Menggunakan getValue
+            const code = inputEditor.getValue().trim(); 
             if (!code) return showToast('Input cannot be empty!', 'fa-circle-xmark', 'error');
 
             const lang = langSelect.value;
@@ -678,14 +658,14 @@
                 else if(lang === 'css') beautified = css_beautify(code, options);
                 else beautified = html_beautify(code, options);
 
-                outputEditor.setValue(beautified); // Menggunakan setValue
+                outputEditor.setValue(beautified); 
                 showToast('Code successfully beautified!', 'fa-wand-magic-sparkles', 'success');
             } catch (err) {
                 showToast('Processing error!', 'fa-triangle-exclamation', 'error');
             }
         });
 
-        // 5. Utility Features
+        // 6. Utility Features
         document.getElementById('copyBtn').addEventListener('click', () => {
             const outCode = outputEditor.getValue();
             if (!outCode) return showToast('No code to copy', 'fa-circle-xmark', 'error');
@@ -712,8 +692,7 @@
             showToast('Download started', 'fa-download', 'success');
         });
 
-        // 6. World Class Toast System (DIPERBAIKI)
-        // Penyesuaian argumen fungsi untuk fleksibilitas icon & tipe error/success
+        // 7. World Class Toast System
         function showToast(message, iconClass = 'fa-circle-check', type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -725,7 +704,6 @@
 
             toastContainer.appendChild(toast);
 
-            // Hapus otomatis dengan animasi setelah 3 detik
             setTimeout(() => {
                 toast.classList.add('fade-out');
                 toast.addEventListener('animationend', () => {
@@ -734,20 +712,18 @@
             }, 3000);
         }
 
-        // --- LOGIKA CUSTOM DROPDOWN ---
-const customSelectWrapper = document.getElementById('customSelectWrapper');
-const customSelectTrigger = document.getElementById('customSelectTrigger');
-const customOptionElements = document.querySelectorAll('.custom-option');
-const customSelectLabel = document.getElementById('customSelectLabel');
+        // --- 8. LOGIKA CUSTOM DROPDOWN ---
+        const customSelectWrapper = document.getElementById('customSelectWrapper');
+        const customSelectTrigger = document.getElementById('customSelectTrigger');
+        const customOptionElements = document.querySelectorAll('.custom-option');
+        const customSelectLabel = document.getElementById('customSelectLabel');
 
-// Buka/Tutup Dropdown
-customSelectTrigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    customSelectWrapper.classList.toggle('open');
-});
+        customSelectTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            customSelectWrapper.classList.toggle('open');
+        });
 
-// Pilih Opsi
-customOptionElements.forEach(option => {
+        customOptionElements.forEach(option => {
             option.addEventListener('click', (e) => {
                 e.stopPropagation();
                 customOptionElements.forEach(opt => opt.classList.remove('selected'));
@@ -766,12 +742,11 @@ customOptionElements.forEach(option => {
             });
         });
 
-// Tutup Dropdown jika user klik di luar area
-document.addEventListener('click', (e) => {
-    if (!customSelectWrapper.contains(e.target)) {
-        customSelectWrapper.classList.remove('open');
-    }
-});
+        document.addEventListener('click', (e) => {
+            if (!customSelectWrapper.contains(e.target)) {
+                customSelectWrapper.classList.remove('open');
+            }
+        });
     </script>
 </body>
 </html>
