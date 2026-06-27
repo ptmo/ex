@@ -445,6 +445,26 @@
             color: var(--text-dim) !important;
         }
 
+        /* Memaksa CodeMirror mengikuti palet warna aplikasi */
+        .cm-s-dracula.CodeMirror {
+            background-color: var(--card) !important;
+            color: var(--text) !important;
+        }
+
+        .cm-s-dracula .CodeMirror-gutters {
+            background-color: var(--card) !important;
+            border-right: 1px solid var(--border) !important;
+        }
+
+        .cm-s-dracula .CodeMirror-linenumber {
+            color: var(--text-dim) !important;
+        }
+        
+        /* Menyesuaikan kursor agar terlihat di mode terang maupun gelap */
+        .cm-s-dracula .CodeMirror-cursor {
+            border-left: 2px solid var(--text) !important;
+        }
+
         @media (max-width: 768px) {
             #toast-container {
                 bottom: 1rem;
