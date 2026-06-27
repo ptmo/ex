@@ -3,249 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Deobfuscator & Unminifier</title>
+    <title>Nexus Unminifier Pro - World Class Tool</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify-html.min.js"></script>
 
     <style>
-        /* CSS Variables untuk Tema Premium */
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            /* Dark Mode Palette (Default) */
+            --bg: #000000;
+            --surface: #111111;
+            --card: #18181b;
+            --border: #27272a;
+            --text: #fafafa;
+            --text-dim: #a1a1aa;
             --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
+            --primary-glow: rgba(59, 130, 246, 0.5);
+            --accent: #2563eb;
             --success: #10b981;
-            --border: #334155;
-            --radius: 12px;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --danger: #f43f5e;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --font-ui: 'Inter', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        /* Reset & Base Styles */
+        .light-mode {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --card: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-dim: #64748b;
+            --primary: #2563eb;
+            --primary-glow: rgba(37, 99, 235, 0.2);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-ui);
+            transition: var(--transition);
+            line-height: 1.5;
+            overflow-x: hidden;
         }
 
-        /* Header / Navbar */
-        header {
-            padding: 1.5rem 2rem;
-            background-color: var(--panel-bg);
-            border-bottom: 1px solid var(--border);
+        /* Nav Header */
+        nav {
+            height: 70px;
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 0 5%;
+            border-bottom: 1px solid var(--border);
+            background: rgba(var(--bg), 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        header h1 {
+        .logo {
+            font-weight: 700;
             font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.025em;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 10px;
+            letter-spacing: -0.5px;
         }
 
-        header h1 i {
+        .logo i {
             color: var(--primary);
+            filter: drop-shadow(0 0 8px var(--primary-glow));
         }
 
         /* Main Layout */
-        main {
-            flex: 1;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            max-width: 1600px;
-            margin: 0 auto;
-            width: 100%;
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        /* Controls */
-        .controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            background: var(--panel-bg);
-            padding: 1rem;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            flex-wrap: wrap;
-        }
-
-        select {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            outline: none;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-
-        button {
-            background-color: var(--panel-bg);
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        button:hover {
-            background-color: var(--border);
-            transform: translateY(-1px);
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        button.primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-
-        button.primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        /* Editor Panels Grid */
-        .editor-container {
+        .tool-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            flex: 1;
-            min-height: 500px;
+            gap: 24px;
+            margin-top: 24px;
         }
 
-        .panel {
-            background-color: var(--panel-bg);
+        /* Cards Styles */
+        .card {
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg);
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            box-shadow: var(--shadow);
+            gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             transition: var(--transition);
         }
 
-        .panel:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        .panel-header {
-            padding: 0.75rem 1.5rem;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid var(--border);
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--text-muted);
         }
 
-        .panel-actions {
+        .card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-dim);
             display: flex;
-            gap: 0.5rem;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Input Customization */
+        .editor-wrapper {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .editor-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        textarea {
+            width: 100%;
+            height: 450px;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            padding: 20px;
+            font-family: var(--font-code);
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+            resize: none;
+        }
+
+        /* Buttons & Actions */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            background: none;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: none;
+            border: 2px solid var(--border);
+            color: var(--text-dim);
+            justify-content: center;
+            padding: 16px;
+            font-size: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: none;
+            box-shadow: 0 8px 20px var(--primary-glow);
         }
 
         .icon-btn {
-            background: transparent;
-            border: none;
-            padding: 0.5rem;
-            color: var(--text-muted);
-            border-radius: 6px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-dim);
+            cursor: pointer;
             transition: var(--transition);
         }
 
         .icon-btn:hover {
-            background-color: var(--border);
-            color: var(--text-main);
-        }
-
-        .icon-btn.danger:hover {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-
-        textarea {
-            flex: 1;
-            width: 100%;
-            background-color: transparent;
-            border: none;
-            color: #e2e8f0;
-            padding: 1.5rem;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-        }
-
-        textarea::placeholder {
-            color: #475569;
-        }
-
-        /* Scrollbar Styling untuk kesan premium */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        ::-webkit-scrollbar-thumb {
+            color: var(--text);
             background: var(--border);
-            border-radius: 5px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
+            border-color: var(--text-dim);
         }
 
-        /* Toast Notifications */
+        /* Custom Options Bar */
+        .options-bar {
+            background: var(--surface);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .lang-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lang-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .process-btn {
+            min-width: 200px;
+        }
+
+        select {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Toast UI - DIPERBAIKI */
         #toast-container {
             position: fixed;
             bottom: 2rem;
@@ -257,8 +275,8 @@
         }
 
         .toast {
-            background-color: var(--panel-bg);
-            color: var(--text-main);
+            background-color: var(--card); /* Menggunakan variabel yang benar */
+            color: var(--text); /* Menggunakan variabel yang benar */
             padding: 1rem 1.5rem;
             border-radius: 8px;
             border-left: 4px solid var(--primary);
@@ -271,6 +289,9 @@
             animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             opacity: 0;
             transform: translateX(100%);
+            border-right: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
 
         .toast.success { border-left-color: var(--success); }
@@ -290,198 +311,231 @@
             to { opacity: 0; transform: translateX(100%); }
         }
 
-        /* Responsive Mobile */
+        /* Theme Toggle */
+        .theme-toggle {
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-dim);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary);
+        }
+
+        /* File Upload Hidden Input */
+        #fileInput { display: none; }
+
         @media (max-width: 768px) {
-            .editor-container {
-                grid-template-columns: 1fr;
-            }
-            main {
-                padding: 1rem;
-            }
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            header {
-                padding: 1rem;
-            }
             #toast-container {
                 bottom: 1rem;
                 right: 1rem;
                 left: 1rem;
             }
         }
+
+        @media (max-width: 968px) {
+            .tool-grid { grid-template-columns: 1fr; }
+            .editor-wrapper textarea { height: 350px; }
+            nav { padding: 0 20px; }
+            
+            /* Responsive Options Bar */
+            .options-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .lang-wrapper {
+                justify-content: space-between;
+            }
+            
+            .lang-wrapper select {
+                flex: 1; 
+                margin-left: 12px;
+            }
+            
+            .process-btn {
+                width: 100%; 
+            }
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1><i class="fa-solid fa-code"></i> Nexus Unminifier</h1>
-    </header>
+    <nav>
+        <div class="logo">
+            <i class="fa-solid fa-bolt-auto"></i>
+            <span>NEXUS <span style="font-weight: 300; opacity: 0.7;">PRO</span></span>
+        </div>
+        <div class="btn-group">
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fa-solid fa-moon"></i>
+            </div>
+        </div>
+    </nav>
 
-    <main>
-        <div class="controls">
-            <select id="languageSelect">
-                <option value="js">JavaScript (JS)</option>
-                <option value="css">Cascading Style Sheets (CSS)</option>
-                <option value="html">HyperText Markup Language (HTML)</option>
-            </select>
-            <button id="btnProcess" class="primary">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Deobfuscate & Unminify
+    <div class="container">
+        
+        <div class="options-bar">
+            <div class="lang-wrapper">
+                <span class="lang-label">LANGUAGE</span>
+                <select id="langSelect">
+                    <option value="js">JavaScript / JSON</option>
+                    <option value="css">CSS / SCSS</option>
+                    <option value="html">HTML Layout</option>
+                </select>
+            </div>
+            <button class="btn btn-primary process-btn" id="processBtn">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Transform Code
             </button>
         </div>
 
-        <div class="editor-container">
+        <div class="tool-grid">
             
-            <div class="panel">
-                <div class="panel-header">
-                    <span><i class="fa-solid fa-file-import"></i> Input (Minified/Obfuscated)</span>
-                    <div class="panel-actions">
-                        <button class="icon-btn danger" id="btnClear" title="Clear Code">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-terminal"></i> SOURCE INPUT</div>
+                    <div class="btn-group">
+                        <label for="fileInput" class="icon-btn" title="Upload File">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </label>
+                        <input type="file" id="fileInput" accept=".js,.css,.html,.txt,.json">
+                        <button class="icon-btn" id="clearBtn" title="Clear All">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 </div>
-                <textarea id="inputCode" placeholder="Tempel kode Anda di sini..." spellcheck="false"></textarea>
+                <div class="editor-wrapper">
+                    <textarea id="inputCode" placeholder="// Paste your minified or obfuscated code here..."></textarea>
+                </div>
             </div>
 
-            <div class="panel">
-                <div class="panel-header">
-                    <span><i class="fa-solid fa-file-code"></i> Output (Beautified)</span>
-                    <div class="panel-actions">
-                        <button class="icon-btn" id="btnCopy" title="Copy to Clipboard">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fa-solid fa-code"></i> BEAUTIFIED OUTPUT</div>
+                    <div class="btn-group">
+                        <button class="icon-btn" id="copyBtn" title="Copy Code">
                             <i class="fa-regular fa-copy"></i>
                         </button>
-                        <button class="icon-btn" id="btnDownload" title="Download File">
+                        <button class="icon-btn" id="downloadBtn" title="Download File">
                             <i class="fa-solid fa-download"></i>
                         </button>
                     </div>
                 </div>
-                <textarea id="outputCode" placeholder="Hasil akan muncul di sini..." readonly spellcheck="false"></textarea>
+                <div class="editor-wrapper">
+                    <textarea id="outputCode" placeholder="// Results will appear here..." readonly></textarea>
+                </div>
             </div>
 
         </div>
-    </main>
+    </div>
 
+    <!-- Kontainer ini wajib ada agar notifikasi tidak error (DIPERBAIKI) -->
     <div id="toast-container"></div>
 
     <script>
         // DOM Elements
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
         const inputCode = document.getElementById('inputCode');
         const outputCode = document.getElementById('outputCode');
-        const languageSelect = document.getElementById('languageSelect');
-        const btnProcess = document.getElementById('btnProcess');
-        const btnClear = document.getElementById('btnClear');
-        const btnCopy = document.getElementById('btnCopy');
-        const btnDownload = document.getElementById('btnDownload');
-        const toastContainer = document.getElementById('toast-container');
+        const fileInput = document.getElementById('fileInput');
+        const langSelect = document.getElementById('langSelect');
+        const toastContainer = document.getElementById('toast-container'); // (DIPERBAIKI) Deklarasi Wajib Ditambahkan
 
-        // Fitur 1: Deobfuscate & Unminify
-        btnProcess.addEventListener('click', () => {
+        // --- FITUR LOCAL STORAGE UNTUK TEMA (DIPERBAIKI) ---
+        // 1. Cek penyimpanan lokal saat halaman dimuat
+        const savedTheme = localStorage.getItem('nexus_theme');
+        if (savedTheme === 'light') {
+            body.classList.add('light-mode');
+            themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        }
+
+        // 2. Dual Mode Theme Logic (Ditambahkan penyimpanan state)
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            
+            // Ubah Ikon
+            themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            
+            // Simpan ke Local Storage agar tidak hilang saat refresh
+            localStorage.setItem('nexus_theme', isLight ? 'light' : 'dark');
+            
+            showToast(isLight ? 'Light Mode Activated' : 'Dark Mode Activated', isLight ? 'fa-sun' : 'fa-moon', 'success');
+        });
+
+        // 3. File Upload Logic
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                inputCode.value = e.target.result;
+                showToast('File uploaded successfully!', 'fa-cloud-arrow-up', 'success');
+            };
+            reader.readAsText(file);
+            
+            // Reset input file agar file yang sama bisa diupload ulang jika dibersihkan
+            fileInput.value = '';
+        });
+
+        // 4. Main Processing Logic
+        document.getElementById('processBtn').addEventListener('click', () => {
             const code = inputCode.value.trim();
-            const lang = languageSelect.value;
-
             if (!code) {
-                showToast('Harap masukkan kode terlebih dahulu.', 'error', 'fa-circle-xmark');
-                return;
+                return showToast('Input cannot be empty!', 'fa-circle-xmark', 'error');
             }
+
+            const lang = langSelect.value;
+            const options = { 
+                indent_size: 4, 
+                space_in_empty_paren: true,
+                unescape_strings: true 
+            };
 
             try {
-                let result = '';
-                
-                // Konfigurasi Standar Industri untuk js-beautify
-                const options = {
-                    indent_size: 4,
-                    indent_char: ' ',
-                    max_preserve_newlines: 2,
-                    preserve_newlines: true,
-                    keep_array_indentation: false,
-                    break_chained_methods: false,
-                    space_before_conditional: true,
-                    unescape_strings: true, // Fitur Deobfuscate ringan (mengurai \x20, dsb)
-                    jslint_happy: false,
-                    end_with_newline: false,
-                    wrap_line_length: 0,
-                };
+                let beautified = "";
+                if(lang === 'js') beautified = js_beautify(code, options);
+                else if(lang === 'css') beautified = css_beautify(code, options);
+                else beautified = html_beautify(code, options);
 
-                // Panggil library berdasarkan bahasa
-                if (lang === 'js') {
-                    result = js_beautify(code, options);
-                } else if (lang === 'css') {
-                    result = css_beautify(code, options);
-                } else if (lang === 'html') {
-                    result = html_beautify(code, options);
-                }
-
-                outputCode.value = result;
-                showToast('Kode berhasil diproses!', 'success', 'fa-circle-check');
-            } catch (error) {
-                console.error(error);
-                showToast('Terjadi kesalahan saat memproses kode.', 'error', 'fa-triangle-exclamation');
-            }
-        });
-
-        // Fitur 2: Clear Code
-        btnClear.addEventListener('click', () => {
-            if(inputCode.value === '' && outputCode.value === '') return;
-            inputCode.value = '';
-            outputCode.value = '';
-            showToast('Editor dibersihkan.', 'success', 'fa-broom');
-        });
-
-        // Fitur 3: Copy to Clipboard
-        btnCopy.addEventListener('click', async () => {
-            const textToCopy = outputCode.value;
-            if (!textToCopy) {
-                showToast('Tidak ada kode untuk disalin.', 'error', 'fa-circle-xmark');
-                return;
-            }
-
-            try {
-                await navigator.clipboard.writeText(textToCopy);
-                showToast('Kode disalin ke clipboard!', 'success', 'fa-copy');
+                outputCode.value = beautified;
+                showToast('Code successfully beautified!', 'fa-wand-magic-sparkles', 'success');
             } catch (err) {
-                // Fallback untuk browser lawas
-                outputCode.select();
-                document.execCommand('copy');
-                showToast('Kode disalin ke clipboard!', 'success', 'fa-copy');
+                showToast('Processing error!', 'fa-triangle-exclamation', 'error');
             }
         });
 
-        // Fitur 4: Download File
-        btnDownload.addEventListener('click', () => {
-            const textToSave = outputCode.value;
-            const lang = languageSelect.value;
-            
-            if (!textToSave) {
-                showToast('Tidak ada kode untuk diunduh.', 'error', 'fa-circle-xmark');
-                return;
-            }
-
-            // Ekstensi file dinamis
-            const extension = lang === 'js' ? 'js' : lang === 'css' ? 'css' : 'html';
-            const filename = `unminified_code.${extension}`;
-
-            const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            
-            // Cleanup
-            setTimeout(() => {
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }, 0);
-
-            showToast(`File ${filename} berhasil diunduh.`, 'success', 'fa-download');
+        // 5. Utility Features
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            if (!outputCode.value) return showToast('No code to copy', 'fa-circle-xmark', 'error');
+            navigator.clipboard.writeText(outputCode.value);
+            showToast('Copied to clipboard!', 'fa-copy', 'success');
         });
 
-        // Sistem Toast Notification Kustom
-        function showToast(message, type = 'success', iconClass = 'fa-info-circle') {
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (!inputCode.value && !outputCode.value) return;
+            inputCode.value = "";
+            outputCode.value = "";
+            showToast('Editors cleared', 'fa-broom', 'success');
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (!outputCode.value) return showToast('No code to download', 'fa-circle-xmark', 'error');
+            const blob = new Blob([outputCode.value], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nexus_export.${langSelect.value}`;
+            a.click();
+            showToast('Download started', 'fa-download', 'success');
+        });
+
+        // 6. World Class Toast System (DIPERBAIKI)
+        // Penyesuaian argumen fungsi untuk fleksibilitas icon & tipe error/success
+        function showToast(message, iconClass = 'fa-circle-check', type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             
