@@ -291,11 +291,46 @@
         /* File Upload Hidden Input */
         #fileInput { display: none; }
 
-        /* Responsive */
+        .lang-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lang-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.process-btn {
+    min-width: 200px;
+}
+
         @media (max-width: 968px) {
-            .tool-grid { grid-template-columns: 1fr; }
-            .editor-wrapper textarea { height: 350px; }
-            nav { padding: 0 20px; }
+    /* Aturan yang sudah ada sebelumnya... */
+    .tool-grid { grid-template-columns: 1fr; }
+    .editor-wrapper textarea { height: 350px; }
+    nav { padding: 0 20px; }
+    
+    /* Tambahan untuk memperbaiki asimetris Options Bar */
+    .options-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .lang-wrapper {
+        justify-content: space-between;
+    }
+    
+    .lang-wrapper select {
+        flex: 1; /* Membuat kotak select lebih rapi dan responsif */
+        margin-left: 12px;
+    }
+    
+    .process-btn {
+        width: 100%; /* Membuat tombol melebar penuh secara simetris */
+    }
         }
     </style>
 </head>
@@ -316,17 +351,17 @@
     <div class="container">
         
         <div class="options-bar">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim);">LANGUAGE</span>
-                <select id="langSelect">
-                    <option value="js">JavaScript / JSON</option>
-                    <option value="css">CSS / SCSS</option>
-                    <option value="html">HTML Layout</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" id="processBtn" style="min-width: 200px;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Transform Code
-            </button>
+    <div class="lang-wrapper">
+        <span class="lang-label">LANGUAGE</span>
+        <select id="langSelect">
+            <option value="js">JavaScript / JSON</option>
+            <option value="css">CSS / SCSS</option>
+            <option value="html">HTML Layout</option>
+        </select>
+    </div>
+    <button class="btn btn-primary process-btn" id="processBtn">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Transform Code
+    </button>
         </div>
 
         <div class="tool-grid">
