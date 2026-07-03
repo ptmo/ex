@@ -484,10 +484,10 @@
 
             <div id="tab-profil" class="tab-content">
                 <div class="card" style="display: flex; align-items: center; gap: 16px;">
-                    <div style="width: 60px; height: 60px; background: var(--accent-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: var(--primary-color);">JD</div>
+                    <div style="width: 60px; height: 60px; background: var(--accent-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: var(--primary-color);">AR</div>
                     <div>
-                        <h3 style="margin-bottom: 4px;">John Doe</h3>
-                        <p style="font-size: 13px; color: var(--text-muted);">+62 812-3456-7890</p>
+                        <h3 style="margin-bottom: 4px;">Arie Novra Rosadi</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">+62 8896737408</p>
                         <span style="display: inline-block; background: rgba(16, 185, 129, 0.1); color: var(--success-color); font-size: 10px; padding: 4px 8px; border-radius: 4px; margin-top: 8px; font-weight: 600;"><i class="fas fa-check-circle"></i> Akun Terverifikasi</span>
                     </div>
                 </div>
@@ -627,7 +627,13 @@
         let selectedInstallmentIndex = null; // Menyimpan index cicilan yang mau dibayar
 
         let notifications = JSON.parse(localStorage.getItem('dana_pinjam_notif')) || [];
-        let savedBanks = JSON.parse(localStorage.getItem('dana_pinjam_banks')) || [{ id: 1, bank: 'BRI', name: 'John Doe', number: '1234567890' }];
+        let savedBanks = JSON.parse(localStorage.getItem('dana_pinjam_banks')) || [];
+        
+        // Auto-update bank utama dari John Doe menjadi data asli Anda
+        if (savedBanks.length === 0 || savedBanks[0].name === 'John Doe') {
+            savedBanks[0] = { id: 1, bank: 'BRI', name: 'ARIE NOVRA ROSADI', number: '413401009268507' };
+            localStorage.setItem('dana_pinjam_banks', JSON.stringify(savedBanks));
+        }
         // Tambahan penyimpanan Pinjaman Aktif
         let activeLoan = JSON.parse(localStorage.getItem('dana_pinjam_active_loan')) || null;
 
