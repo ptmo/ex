@@ -580,6 +580,11 @@
                         <span>Bahasa</span>
                         <span style="color: var(--text-muted); font-size: 13px;">Indonesia <i class="fas fa-chevron-right" style="margin-left:8px;"></i></span>
                     </div>
+                    
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; color: var(--danger-color); font-weight: 600; cursor: pointer;" onclick="clearAppData()">
+                        <span>Hapus Data</span><i class="fas fa-trash-alt"></i>
+                    </div>
+
                     <div style="padding: 16px; display: flex; justify-content: space-between; color: var(--danger-color); font-weight: 600; cursor: pointer;">
                         <span>Keluar Akun</span><i class="fas fa-sign-out-alt"></i>
                     </div>
@@ -1458,6 +1463,24 @@
                     console.error('PWA Service Worker gagal:', error);
                 });
             });
+        }
+
+        /* --- FITUR HAPUS DATA (RESET APP) --- */
+        function clearAppData() {
+            // Memunculkan konfirmasi bawaan browser untuk keamanan
+            const confirmDelete = window.confirm("PERINGATAN: Seluruh riwayat pinjaman, notifikasi, dan data rekening Anda akan dihapus permanen. Apakah Anda yakin ingin mereset aplikasi?");
+            
+            if (confirmDelete) {
+                // Menghapus kunci penyimpanan khusus aplikasi ini saja (aman)
+                localStorage.removeItem('dana_pinjam_notif');
+                localStorage.removeItem('dana_pinjam_banks');
+                localStorage.removeItem('dana_pinjam_active_loan');
+                localStorage.removeItem('dana_pinjam_theme');
+                localStorage.removeItem('dana_pinjam_kyc');
+                
+                // Memuat ulang halaman untuk menerapkan reset
+                window.location.reload();
+            }
         }
 
         // 7. Deteksi Jaringan (Offline Mode)
