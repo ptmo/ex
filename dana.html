@@ -680,9 +680,22 @@
                 </div>
 
                 <div class="receipt-box">
-                    <div class="receipt-row"><span>Nominal Cair (Bersih)</span><span id="rBersih" class="text-success" style="font-size:16px;">Rp 0</span></div>
-                    <div class="receipt-row"><span>Total Pengembalian</span><span id="rNominal">Rp 0</span></div>
-                    <div class="receipt-row"><span>Cicilan Per Bulan</span><span id="rCicilan">Rp 0</span></div>
+                    <div class="receipt-row">
+                        <span>Biaya Admin (0.5%)</span>
+                        <span id="rAdmin" style="color: var(--danger-color); font-weight: 600;">- Rp 0</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Nominal Cair (Bersih)</span>
+                        <span id="rBersih" class="text-success" style="font-size:16px;">Rp 0</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Total Pengembalian</span>
+                        <span id="rNominal">Rp 0</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Cicilan Per Bulan</span>
+                        <span id="rCicilan">Rp 0</span>
+                    </div>
                     <div class="receipt-row" style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;">
                         <span>Lama Tenor</span><span id="rTenor">0 Bulan</span>
                     </div>
@@ -1570,11 +1583,14 @@
             const netReceived = P - adminFee;
             const monthly = totalPayment / state.tenor;
 
+            // Update UI Teks Modal (Biaya Admin Dimasukkan)
+            document.getElementById('rAdmin').textContent = '- Rp ' + formatRupiah(adminFee);
             document.getElementById('rBersih').textContent = 'Rp ' + formatRupiah(netReceived);
             document.getElementById('rNominal').textContent = 'Rp ' + formatRupiah(totalPayment);
             document.getElementById('rCicilan').textContent = 'Rp ' + formatRupiah(monthly);
             document.getElementById('rTenor').textContent = state.tenor + ' Bulan';
 
+            // Render Pie Chart
             const totalPie = P + totalInterest + adminFee;
             const pPokok = (P / totalPie) * 100;
             const pBunga = (totalInterest / totalPie) * 100;
@@ -1582,7 +1598,7 @@
 
             setTimeout(() => openModal('modalConfirm'), 300);
         };
-
+        
         // Modifikasi pencairan untuk dicetak ke Struk Riwayat permanen
         generateVerificationNotification = function() {
             const P = state.amount;
