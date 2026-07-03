@@ -736,6 +736,9 @@
                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Bank_Negara_Indonesia_logo_%282004%29.svg/330px-Bank_Negara_Indonesia_logo_%282004%29.svg.png" alt="BNI"> Bank Negara Indonesia (BNI)
                         </div>
                     </div>
+                    
+                    <input type="hidden" id="inputBank" value="">
+                </div>
 
                 <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">Nama Pemilik Rekening</label>
                 <input type="text" class="form-input" id="inputName" placeholder="Sesuai KTP" autocomplete="off">
@@ -746,8 +749,7 @@
                 <button class="btn-submit" style="margin-top: 10px;" onclick="saveNewBank()">Simpan Rekening</button>
             </div>
         </div>
-    </div>
-
+        
         <div class="offline-banner" id="offlineBanner"><i class="fas fa-wifi" style="margin-right:8px;"></i>Koneksi Internet Terputus</div>
 
         <div class="full-loader" id="sysLoader">
