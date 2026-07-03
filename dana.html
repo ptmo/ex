@@ -771,6 +771,20 @@
             </div>
         </div>
 
+        <div class="modal-overlay modal-center" id="modalClearData">
+            <div class="modal-content">
+                <i class="fas fa-exclamation-triangle" style="font-size: 56px; color: var(--danger-color); margin-bottom: 16px;"></i>
+                <h2 style="margin-bottom: 12px;">Hapus Data Aplikasi?</h2>
+                <p style="font-size:14px; color:var(--text-muted); line-height:1.5; margin-bottom: 24px;">
+                    <strong>PERINGATAN:</strong> Seluruh riwayat pinjaman, notifikasi, dan data rekening Anda akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+                </p>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-secondary" style="margin-top: 0;" onclick="closeModal('modalClearData')">Batal</button>
+                    <button class="btn-submit" style="margin-top: 0; background-color: var(--danger-color); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);" onclick="executeClearData()">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -1465,22 +1479,23 @@
             });
         }
 
-        /* --- FITUR HAPUS DATA (RESET APP) --- */
+       /* --- FITUR HAPUS DATA (RESET APP) --- */
         function clearAppData() {
-            // Memunculkan konfirmasi bawaan browser untuk keamanan
-            const confirmDelete = window.confirm("PERINGATAN: Seluruh riwayat pinjaman, notifikasi, dan data rekening Anda akan dihapus permanen. Apakah Anda yakin ingin mereset aplikasi?");
+            // Membuka modal kustom yang elegan, bukan alert jadul browser
+            openModal('modalClearData');
+        }
+
+        function executeClearData() {
+            // Eksekusi penghapusan memori
+            localStorage.removeItem('dana_pinjam_notif');
+            localStorage.removeItem('dana_pinjam_banks');
+            localStorage.removeItem('dana_pinjam_active_loan');
+            localStorage.removeItem('dana_pinjam_theme');
+            localStorage.removeItem('dana_pinjam_kyc');
             
-            if (confirmDelete) {
-                // Menghapus kunci penyimpanan khusus aplikasi ini saja (aman)
-                localStorage.removeItem('dana_pinjam_notif');
-                localStorage.removeItem('dana_pinjam_banks');
-                localStorage.removeItem('dana_pinjam_active_loan');
-                localStorage.removeItem('dana_pinjam_theme');
-                localStorage.removeItem('dana_pinjam_kyc');
-                
-                // Memuat ulang halaman untuk menerapkan reset
-                window.location.reload();
-            }
+            // Tutup modal dan refresh halaman otomatis
+            closeModal('modalClearData');
+            window.location.reload();
         }
 
         // 7. Deteksi Jaringan (Offline Mode)
