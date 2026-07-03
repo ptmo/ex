@@ -1842,23 +1842,46 @@
         function selectPaymentOption(value, text, imgSrc, element) {
             // 1. Update nilai tersembunyi untuk diproses saat bayar
             document.getElementById('paymentMethod').value = value;
-            
             // 2. Update tampilan menu trigger
             document.getElementById('selectedPaymentDisplay').innerHTML = `<img src="${imgSrc}" alt="${text}"> ${text}`;
-            
             // 3. Tutup dropdown
             document.getElementById('customOptions').classList.remove('open');
-            
             // 4. Ubah highlight (efek terpilih/selected)
-            document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('#customOptions .custom-option').forEach(opt => opt.classList.remove('selected'));
             element.classList.add('selected');
         }
 
-        // Tutup dropdown secara otomatis jika user mengklik area lain di layar
+        /* --- CUSTOM BANK DROPDOWN LOGIC --- */
+        function toggleBankDropdown() {
+            document.getElementById('customBankOptions').classList.toggle('open');
+        }
+
+        function selectBankOption(value, text, imgSrc, element) {
+            // Update nilai hidden input untuk disimpan
+            document.getElementById('inputBank').value = value;
+            // Update tampilan yang dipilih
+            document.getElementById('selectedBankDisplay').innerHTML = `<img src="${imgSrc}" alt="${value}"> ${text}`;
+            document.getElementById('selectedBankDisplay').style.color = 'var(--text-main)'; 
+            // Tutup dropdown
+            document.getElementById('customBankOptions').classList.remove('open');
+            // Hapus highlight dari pilihan sebelumnya
+            document.querySelectorAll('#customBankOptions .custom-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        /* --- PENUTUP OTOMATIS SEMUA DROPDOWN --- */
+        // Cukup panggil SATU KALI saja untuk mendeteksi klik di luar layar
         document.addEventListener('click', function(e) {
-            const selectWrapper = document.getElementById('customPaymentSelect');
-            if (selectWrapper && !selectWrapper.contains(e.target)) {
-                document.getElementById('customOptions').classList.remove('open');
+            const selectPayment = document.getElementById('customPaymentSelect');
+            if (selectPayment && !selectPayment.contains(e.target)) {
+                const optPay = document.getElementById('customOptions');
+                if(optPay) optPay.classList.remove('open');
+            }
+            
+            const selectBank = document.getElementById('customBankSelect');
+            if (selectBank && !selectBank.contains(e.target)) {
+                const optBank = document.getElementById('customBankOptions');
+                if(optBank) optBank.classList.remove('open');
             }
         });
 
@@ -1880,7 +1903,6 @@
                 item.className = 'bank-item';
                 item.style.cursor = 'default'; // Kursor diubah jadi panah biasa (bukan pointer)
                 
-                // PENTING: Tidak ada "onclick = selectBank(b)" di HTML bawah ini
                 item.innerHTML = `
                     <div class="bank-icon">${b.bank.substring(0,3)}</div>
                     <div class="bank-details">
