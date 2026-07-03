@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dana Pinjam | Premium App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --primary-color: #0B1C3D;
+            --accent-color: #D4AF37;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --success-color: #10B981;
+            --danger-color: #EF4444;
+            --overlay-bg: rgba(11, 28, 61, 0.6);
+            --shadow-soft: 0 10px 30px rgba(11, 28, 61, 0.05);
+            --shadow-modal: 0 25px 50px rgba(0, 0, 0, 0.25);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --primary-color: #1E293B;
+            --accent-color: #EAB308;
+            --bg-color: #0F172A;
+            --card-bg: #1e293b;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #334155;
+            --overlay-bg: rgba(0, 0, 0, 0.8);
+            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #334155;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* App Container */
+        .mobile-app {
+            width: 100%;
+            max-width: 414px;
+            height: 100vh;
+            max-height: 896px;
+            background-color: var(--bg-color);
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 40px 24px 30px;
+            border-bottom-left-radius: var(--radius-lg);
+            border-bottom-right-radius: var(--radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            z-index: 10;
+            transition: var(--transition);
+        }
+
+        .header-title h1 { font-size: 20px; font-weight: 700; color: var(--accent-color); margin-bottom: 4px; }
+        .header-title p { font-size: 13px; font-weight: 300; opacity: 0.8; }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .badge {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            background: var(--danger-color);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Scrollable Content */
+        .content {
+            flex: 1;
+            padding: 24px 24px 100px 24px;
+            overflow-y: auto;
+        }
+
+        /* Form Card */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 24px;
+            margin-top: -20px;
+            position: relative;
+            z-index: 5;
+            transition: var(--transition);
+        }
+
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+        /* Amount Input */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .input-prefix {
+            position: absolute;
+            left: 16px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            transition: var(--transition);
+        }
+        [data-theme="dark"] .input-prefix { color: var(--accent-color); }
+        
+        .amount-input {
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: transparent;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px 12px 50px;
+            outline: none;
+            transition: var(--transition);
+            text-align: left;
+        }
+        [data-theme="dark"] .amount-input { color: white; }
+        .amount-input:focus { border-color: var(--accent-color); }
+
+        /* Slider */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: var(--border-color); border-radius: 4px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px; width: 24px; border-radius: 50%; background: var(--accent-color);
+            cursor: pointer; -webkit-appearance: none; margin-top: -9px;
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4); border: 2px solid white; transition: var(--transition);
+        }
+        
+        .limit-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+
+        /* Tenor Selection */
+        .tenor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .tenor-btn {
+            background-color: transparent; border: 1px solid var(--border-color); color: var(--text-muted);
+            padding: 12px 0; border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+        }
+        .tenor-btn.active {
+            background-color: var(--primary-color); color: white; border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(11, 28, 61, 0.2);
+        }
+        [data-theme="dark"] .tenor-btn.active { background-color: var(--accent-color); color: var(--primary-color); border-color: var(--accent-color); }
+
+        /* Result Section */
+        .result-section {
+            background: linear-gradient(135deg, var(--primary-color), #1a2f5c);
+            border-radius: var(--radius-lg); padding: 24px; color: white; box-shadow: var(--shadow-soft);
+        }
+        [data-theme="dark"] .result-section { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--border-color); }
+        
+        .result-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .result-row:last-child { margin-bottom: 0; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .result-label { font-size: 13px; font-weight: 300; opacity: 0.9; }
+        .result-value { font-size: 16px; font-weight: 600; }
+        .highlight-value { font-size: 22px; color: var(--accent-color); font-weight: 700; }
+
+        /* Button */
+        .btn-submit {
+            width: 100%; background-color: var(--accent-color); color: #000; border: none;
+            padding: 18px; border-radius: var(--radius-md); font-size: 16px; font-weight: 700;
+            margin-top: 24px; cursor: pointer; transition: var(--transition); box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(212, 175, 55, 0.4); }
+        .btn-secondary {
+            width: 100%; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 14px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+            background-color: var(--card-bg); border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 20; transition: var(--transition);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 500; gap: 4px;
+            width: 25%; transition: var(--transition); cursor: pointer;
+        }
+        .nav-item i { font-size: 20px; margin-bottom: 2px; }
+        .nav-item.active { color: var(--accent-color); }
+
+        /* Modals */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--overlay-bg); backdrop-filter: blur(4px);
+            display: flex; justify-content: center; align-items: flex-end;
+            opacity: 0; pointer-events: none; transition: var(--transition); z-index: 100;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-content {
+            background-color: var(--card-bg); width: 100%; border-top-left-radius: 28px; border-top-right-radius: 28px;
+            padding: 30px 24px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 85vh; overflow-y: auto;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-header h2 { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .close-modal { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; }
+
+        /* Bank Item */
+        .bank-item {
+            display: flex; align-items: center; padding: 16px; border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); cursor: pointer; transition: var(--transition);
+        }
+        .bank-item:hover { border-color: var(--accent-color); background-color: rgba(212, 175, 55, 0.05); }
+        .bank-icon {
+            width: 40px; height: 40px; background: #005E9D; color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-weight: 700; margin-right: 16px;
+        }
+        .bank-details h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-main); }
+        .bank-details p { font-size: 12px; color: var(--text-muted); }
+
+        /* Receipt */
+        .receipt-box { background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px dashed var(--border-color); }
+        .receipt-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; color: var(--text-main); }
+        .receipt-row:last-child { margin-bottom: 0; padding-top: 12px; border-top: 1px solid var(--border-color); font-weight: 700; }
+        .text-success { color: var(--success-color); }
+
+        /* Notifications */
+        .notif-list { display: flex; flex-direction: column; gap: 12px; }
+        .notif-item {
+            padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color);
+            background: var(--bg-color); cursor: pointer; transition: var(--transition); display: flex; gap: 12px; align-items: flex-start;
+        }
+        .notif-item.unread { background: var(--card-bg); border-left: 4px solid var(--accent-color); }
+        .notif-icon { width: 32px; height: 32px; background: rgba(212, 175, 55, 0.1); color: var(--accent-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        .notif-text h4 { font-size: 14px; margin-bottom: 4px; font-weight: 600; color: var(--text-main); }
+        .notif-text p { font-size: 12px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Toast */
+        .toast {
+            position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+            background: var(--card-bg); color: var(--text-main); padding: 12px 20px;
+            border-radius: 30px; box-shadow: var(--shadow-modal); font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 10px; z-index: 200; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border: 1px solid var(--border-color); width: 90%; max-width: 350px; justify-content: center;
+        }
+        .toast.show { top: 20px; }
+        .toast i { color: var(--success-color); font-size: 18px; }
+
+        /* Center modal for success */
+        .modal-center .modal-content {
+            transform: scale(0.9); border-radius: var(--radius-lg); width: 90%; margin-bottom: auto; margin-top: auto; text-align: center;
+        }
+        .modal-overlay.active.modal-center .modal-content { transform: scale(1); }
+        .icon-success { font-size: 60px; color: var(--success-color); margin-bottom: 16px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-app" id="appContainer">
+        <div class="toast" id="toastBox"><i class="fas fa-check-circle"></i> <span id="toastMsg">Notifikasi</span></div>
+
+        <header class="header">
+            <div class="header-title">
+                <h1>DANA PINJAM</h1>
+                <p>Limit s/d Rp 8.000.000</p>
+            </div>
+            <div class="header-actions">
+                <button class="action-btn" id="themeToggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+                <button class="action-btn" onclick="openModal('modalNotifList')">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notifBadge">0</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="card">
+                <div class="form-group">
+                    <label>Plafon Pinjaman</label>
+                    <div class="input-wrapper">
+                        <span class="input-prefix">Rp</span>
+                        <input type="text" class="amount-input" id="amountInput" value="5.000.000">
+                    </div>
+                    <input type="range" id="amountSlider" min="500000" max="8000000" step="100000" value="5000000">
+                    <div class="limit-labels">
+                        <span>Min: 500rb</span>
+                        <span>Max: 8jt</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pilih Tenor</label>
+                    <div class="tenor-grid" id="tenorGrid">
+                        <button class="tenor-btn" data-tenor="3">3 Bulan</button>
+                        <button class="tenor-btn active" data-tenor="6">6 Bulan</button>
+                        <button class="tenor-btn" data-tenor="9">9 Bulan</button>
+                        <button class="tenor-btn" data-tenor="12">12 Bulan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-row">
+                    <span class="result-label">Suku Bunga Tetap</span>
+                    <span class="result-value">1.5% / bln</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Estimasi Cicilan</span>
+                    <span class="highlight-value" id="monthlyInstallment">Rp 0</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Total Pengembalian</span>
+                    <span class="result-value" id="totalPayment">Rp 0</span>
+                </div>
+            </div>
+
+            <button class="btn-submit" onclick="openModal('modalBank')">Ajukan Sekarang</button>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active"><i class="fas fa-home"></i>Dashboard</a>
+            <a href="#" class="nav-item"><i class="fas fa-wallet"></i>Pinjaman</a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i>Profil</a>
+            <a href="#" class="nav-item"><i class="fas fa-cog"></i>Pengaturan</a>
+        </nav>
+
+        <div class="modal-overlay" id="modalBank">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Pilih Rekening Pencairan</h2>
+                    <button class="close-modal" onclick="closeModal('modalBank')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="bank-item" onclick="selectBank()">
+                    <div class="bank-icon">BCA</div>
+                    <div class="bank-details">
+                        <h4>Bank Central Asia (BCA)</h4>
+                        <p>a.n John Doe • 1234567890</p>
+                    </div>
+                    <i class="fas fa-chevron-right" style="margin-left:auto; color:var(--text-muted)"></i>
+                </div>
+                <button class="btn-secondary" style="margin-top:20px">+ Tambah Rekening Baru</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalConfirm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Konfirmasi Pinjaman</h2>
+                    <button class="close-modal" onclick="closeModal('modalConfirm')"><i class="fas fa-times"></i></button>
+                </div>
+                <p style="font-size:14px; margin-bottom:16px; text-align:center;">Apakah yakin anda meminjam <strong id="confirmNominal">Rp 0</strong>?</p>
+                
+                <div class="receipt-box">
+                    <div class="receipt-row"><span>Nominal Peminjaman</span><span id="rNominal">Rp 0</span></div>
+                    <div class="receipt-row"><span>Biaya Admin (0.5%)</span><span id="rAdmin" class="text-danger">Rp 0</span></div>
+                    <div class="receipt-row" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+                        <span>Lama Tenor</span><span id="rTenor">0 Bulan</span>
+                    </div>
+                    <div class="receipt-row"><span>Jumlah Diterima Bersih</span><span id="rBersih" class="text-success">Rp 0</span></div>
+                    <div class="receipt-row"><span>Cicilan Per Bulan</span><span id="rCicilan">Rp 0</span></div>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-bottom:20px;">*Dengan menekan Oke, Anda menyetujui syarat & ketentuan kontrak pinjaman.</p>
+                <button class="btn-submit" style="margin-top:0" onclick="processLoan()">Oke, Lanjutkan</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay modal-center" id="modalSuccess">
+            <div class="modal-content">
+                <i class="fas fa-check-circle icon-success"></i>
+                <h2 style="margin-bottom: 12px;">Pengajuan Berhasil</h2>
+                <p style="font-size:14px; color:var(--text-muted); line-height:1.5; margin-bottom: 24px;">
+                    Selesai, kami akan memverifikasi otomatis pengajuan Anda. Membutuhkan waktu sekitar 2 menit. Terima kasih sudah mengajukan pinjaman di Dana Pinjam.
+                </p>
+                <button class="btn-secondary" onclick="closeSuccess()">Tutup</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalNotifList">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Notifikasi</h2>
+                    <button class="close-modal" onclick="closeModal('modalNotifList')"><i class="fas fa-times"></i></button>
+                </div>
+                <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+                    <button onclick="markAllAsRead()" style="background:none; border:none; color:var(--accent-color); font-size:12px; font-weight:600; cursor:pointer;">Tandai baca semua</button>
+                </div>
+                <div class="notif-list" id="notificationContainer">
+                    <p style="text-align:center; font-size:13px; color:var(--text-muted);">Belum ada notifikasi.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay modal-center" id="modalNotifDetail">
+            <div class="modal-content">
+                <div class="modal-header" style="margin-bottom: 12px;">
+                    <h2 id="detTitle" style="font-size: 16px;">Detail</h2>
+                    <button class="close-modal" onclick="closeModal('modalNotifDetail')"><i class="fas fa-times"></i></button>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); text-align:left; margin-bottom:16px;" id="detTime">Waktu</p>
+                <p style="font-size:14px; text-align:left; line-height:1.6;" id="detMsg">Pesan detail.</p>
+                <button class="btn-submit" style="padding:12px; margin-top:24px;" onclick="closeModal('modalNotifDetail')">Kembali</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- STATE MANAGEMENT --- */
+        let state = {
+            amount: 5000000,
+            tenor: 6,
+            rate: 0.015, // 1.5% flat
+            adminFeeRate: 0.005, // 0.5%
+            theme: 'light'
+        };
+
+        let notifications = []; // Simulating DB for notifications
+
+        /* --- DOM ELEMENTS --- */
+        const amountInput = document.getElementById('amountInput');
+        const amountSlider = document.getElementById('amountSlider');
+        const tenorBtns = document.querySelectorAll('.tenor-btn');
+        const badge = document.getElementById('notifBadge');
+        const appContainer = document.getElementById('appContainer');
+        const themeToggleBtn = document.getElementById('themeToggle');
+
+        /* --- FORMATTING UTILS --- */
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID').format(number);
+        };
+        const parseRupiah = (str) => {
+            let val = parseInt(str.replace(/[^0-9]/g, ''));
+            return isNaN(val) ? 0 : val;
+        };
+
+        /* --- CORE CALCULATION --- */
+        const calculateLoan = () => {
+            const P = state.amount;
+            const T = state.tenor;
+            const R = state.rate;
+
+            const totalInterest = P * R * T;
+            const totalPayment = P + totalInterest;
+            const monthly = totalPayment / T;
+
+            document.getElementById('monthlyInstallment').textContent = 'Rp ' + formatRupiah(monthly);
+            document.getElementById('totalPayment').textContent = 'Rp ' + formatRupiah(totalPayment);
+            updateSliderFill();
+        };
+
+        /* --- EVENT LISTENERS FOR INPUT & SLIDER --- */
+        // Type on Input
+        amountInput.addEventListener('input', function(e) {
+            let val = parseRupiah(this.value);
+            if (val > 8000000) val = 8000000; // Max constraint while typing
+            
+            this.value = formatRupiah(val);
+            
+            // Only update logic if it's within min bound to prevent calculation error while typing
+            if(val >= 500000) {
+                state.amount = val;
+                amountSlider.value = val;
+                calculateLoan();
+            }
+        });
+
+        // Blur on Input (Enforce Min Limit)
+        amountInput.addEventListener('blur', function() {
+            let val = parseRupiah(this.value);
+            if (val < 500000) val = 500000;
+            if (val > 8000000) val = 8000000;
+            
+            this.value = formatRupiah(val);
+            state.amount = val;
+            amountSlider.value = val;
+            calculateLoan();
+        });
+
+        // Slide on Range
+        amountSlider.addEventListener('input', function() {
+            state.amount = parseInt(this.value);
+            amountInput.value = formatRupiah(state.amount);
+            calculateLoan();
+        });
+
+        function updateSliderFill() {
+            const val = (amountSlider.value - amountSlider.min) / (amountSlider.max - amountSlider.min) * 100;
+            amountSlider.style.background = `linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ${val}%, var(--border-color) ${val}%, var(--border-color) 100%)`;
+        }
+
+        // Tenor Selection
+        tenorBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                tenorBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.tenor = parseInt(e.target.getAttribute('data-tenor'));
+                calculateLoan();
+            });
+        });
+
+        /* --- MODAL LOGIC --- */
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function selectBank() {
+            closeModal('modalBank');
+            
+            // Prepare Receipt Data
+            const P = state.amount;
+            const adminFee = P * state.adminFeeRate;
+            const netReceived = P - adminFee;
+            const totalPayment = P + (P * state.rate * state.tenor);
+            const monthly = totalPayment / state.tenor;
+
+            document.getElementById('confirmNominal').textContent = 'Rp ' + formatRupiah(P);
+            document.getElementById('rNominal').textContent = 'Rp ' + formatRupiah(P);
+            document.getElementById('rAdmin').textContent = '- Rp ' + formatRupiah(adminFee);
+            document.getElementById('rTenor').textContent = state.tenor + ' Bulan';
+            document.getElementById('rBersih').textContent = 'Rp ' + formatRupiah(netReceived);
+            document.getElementById('rCicilan').textContent = 'Rp ' + formatRupiah(monthly);
+
+            setTimeout(() => openModal('modalConfirm'), 300);
+        }
+
+        function processLoan() {
+            closeModal('modalConfirm');
+            setTimeout(() => openModal('modalSuccess'), 300);
+        }
+
+        function closeSuccess() {
+            closeModal('modalSuccess');
+            // Trigger 10-second automation script
+            setTimeout(generateVerificationNotification, 10000);
+        }
+
+        /* --- NOTIFICATION & TOAST LOGIC --- */
+        function showToast(msg) {
+            const toast = document.getElementById('toastBox');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        function generateVerificationNotification() {
+            // Create new notification object
+            const newNotif = {
+                id: Date.now(),
+                title: 'Status Pinjaman Terverifikasi',
+                message: `Selamat, pengajuan pinjaman Anda sebesar Rp ${formatRupiah(state.amount)} telah berhasil diverifikasi secara otomatis dan segera dicairkan ke rekening Anda.`,
+                time: 'Baru saja',
+                isRead: false
+            };
+            notifications.unshift(newNotif); // Add to top
+
+            // UI Updates
+            showToast('Status detail pinjaman terverifikasi');
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationContainer');
+            let unreadCount = 0;
+            container.innerHTML = '';
+
+            if(notifications.length === 0) {
+                container.innerHTML = '<p style="text-align:center; font-size:13px; color:var(--text-muted);">Belum ada notifikasi.</p>';
+            }
+
+            notifications.forEach(notif => {
+                if(!notif.isRead) unreadCount++;
+                
+                const item = document.createElement('div');
+                item.className = `notif-item ${notif.isRead ? '' : 'unread'}`;
+                item.innerHTML = `
+                    <div class="notif-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div class="notif-text">
+                        <h4>${notif.title}</h4>
+                        <p>${notif.message}</p>
+                        <span style="font-size:10px; color:var(--text-muted); margin-top:6px; display:block;">Baca selengkapnya...</span>
+                    </div>
+                `;
+                item.onclick = () => readNotification(notif.id);
+                container.appendChild(item);
+            });
+
+            // Update Badge
+            if(unreadCount > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = unreadCount;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function readNotification(id) {
+            const notif = notifications.find(n => n.id === id);
+            if(notif) {
+                notif.isRead = true;
+                
+                // Populate Detail Modal
+                document.getElementById('detTitle').textContent = notif.title;
+                document.getElementById('detTime').textContent = notif.time;
+                document.getElementById('detMsg').textContent = notif.message;
+                
+                renderNotifications(); // update dot & list UI
+                openModal('modalNotifDetail');
+            }
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(n => n.isRead = true);
+            renderNotifications();
+        }
+
+        /* --- THEME TOGGLE (Dark/Light) --- */
+        function toggleTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            if(state.theme === 'dark') {
+                appContainer.setAttribute('data-theme', 'dark');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                appContainer.removeAttribute('data-theme');
+                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        }
+
+        // Initialize First Load
+        calculateLoan();
+        renderNotifications();
+        
+    </script>
+</body>
+</html>
