@@ -232,20 +232,27 @@
             padding: 14px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px;
         }
 
-        /* Bottom Nav */
+        /* Perbaikan Navbar Bottom (Fix di bawah layar) */
         .bottom-nav {
             position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
             background-color: var(--card-bg); border-top: 1px solid var(--border-color);
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 20; transition: var(--transition);
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 500; gap: 4px;
-            width: 25%; transition: var(--transition); cursor: pointer;
+        
+        /* Tambahan CSS Tab & Form Input */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-input {
+            width: 100%; padding: 14px; margin-bottom: 16px;
+            border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            background: transparent; color: var(--text-main); font-family: 'Inter', sans-serif;
+            font-size: 14px;
         }
-        .nav-item i { font-size: 20px; margin-bottom: 2px; }
-        .nav-item.active { color: var(--accent-color); }
+        .form-input:focus { outline: none; border-color: var(--accent-color); }
+        select.form-input { -webkit-appearance: none; background-color: var(--bg-color); cursor: pointer; }
 
         /* Modals - Dibuat Center Semua */
         .modal-overlay {
@@ -344,55 +351,96 @@
             </div>
         </header>
 
-        <main class="content">
-            <div class="card">
-                <div class="form-group">
-                    <label>Plafon Pinjaman</label>
-                    <div class="input-wrapper">
-                        <span class="input-prefix">Rp</span>
-                        <input type="text" class="amount-input" id="amountInput" value="5.000.000">
+        <main class="content" style="padding-bottom: 90px;">
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="card">
+                    <div class="form-group">
+                        <label>Plafon Pinjaman</label>
+                        <div class="input-wrapper">
+                            <span class="input-prefix">Rp</span>
+                            <input type="text" class="amount-input" id="amountInput" value="5.000.000">
+                        </div>
+                        <input type="range" id="amountSlider" min="500000" max="8000000" step="100000" value="5000000">
+                        <div class="limit-labels">
+                            <span>Min: 500rb</span>
+                            <span>Max: 8jt</span>
+                        </div>
                     </div>
-                    <input type="range" id="amountSlider" min="500000" max="8000000" step="100000" value="5000000">
-                    <div class="limit-labels">
-                        <span>Min: 500rb</span>
-                        <span>Max: 8jt</span>
+
+                    <div class="form-group">
+                        <label>Pilih Tenor</label>
+                        <div class="tenor-grid" id="tenorGrid">
+                            <button class="tenor-btn" data-tenor="3">3 Bulan</button>
+                            <button class="tenor-btn active" data-tenor="6">6 Bulan</button>
+                            <button class="tenor-btn" data-tenor="9">9 Bulan</button>
+                            <button class="tenor-btn" data-tenor="12">12 Bulan</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Pilih Tenor</label>
-                    <div class="tenor-grid" id="tenorGrid">
-                        <button class="tenor-btn" data-tenor="3">3 Bulan</button>
-                        <button class="tenor-btn active" data-tenor="6">6 Bulan</button>
-                        <button class="tenor-btn" data-tenor="9">9 Bulan</button>
-                        <button class="tenor-btn" data-tenor="12">12 Bulan</button>
+                <div class="result-section">
+                    <div class="result-row">
+                        <span class="result-label">Suku Bunga</span>
+                        <span class="result-value">7.3% / bln</span>
                     </div>
+                    <div class="result-row">
+                        <span class="result-label">Estimasi Cicilan</span>
+                        <span class="highlight-value" id="monthlyInstallment">Rp 0</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Total Pengembalian</span>
+                        <span class="result-value" id="totalPayment">Rp 0</span>
+                    </div>
+                </div>
+
+                <button class="btn-submit" onclick="openModal('modalBank')">Ajukan Sekarang</button>
+            </div>
+
+            <div id="tab-pinjaman" class="tab-content">
+                <div class="card" style="text-align: center; padding: 40px 24px;">
+                    <i class="fas fa-box-open" style="font-size: 48px; color: var(--border-color); margin-bottom: 16px;"></i>
+                    <h3 style="margin-bottom: 8px;">Belum Ada Pinjaman Aktif</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Riwayat tagihan dan kontrak pinjaman Anda akan otomatis muncul di sini setelah pengajuan disetujui.</p>
                 </div>
             </div>
 
-            <div class="result-section">
-                <div class="result-row">
-                    <span class="result-label">Suku Bunga Tetap</span>
-                    <span class="result-value">1.5% / bln</span>
+            <div id="tab-profil" class="tab-content">
+                <div class="card" style="display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 60px; height: 60px; background: var(--accent-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: var(--primary-color);">JD</div>
+                    <div>
+                        <h3 style="margin-bottom: 4px;">John Doe</h3>
+                        <p style="font-size: 13px; color: var(--text-muted);">+62 812-3456-7890</p>
+                        <span style="display: inline-block; background: rgba(16, 185, 129, 0.1); color: var(--success-color); font-size: 10px; padding: 4px 8px; border-radius: 4px; margin-top: 8px; font-weight: 600;"><i class="fas fa-check-circle"></i> Akun Terverifikasi</span>
+                    </div>
                 </div>
-                <div class="result-row">
-                    <span class="result-label">Estimasi Cicilan</span>
-                    <span class="highlight-value" id="monthlyInstallment">Rp 0</span>
-                </div>
-                <div class="result-row">
-                    <span class="result-label">Total Pengembalian</span>
-                    <span class="result-value" id="totalPayment">Rp 0</span>
+                <div class="card" style="padding: 0;">
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; cursor: pointer;"><span>Informasi Pribadi</span><i class="fas fa-chevron-right" style="color:var(--text-muted)"></i></div>
+                    <div style="padding: 16px; display: flex; justify-content: space-between; cursor: pointer;" onclick="openModal('modalBank')"><span>Daftar Rekening Bank</span><i class="fas fa-chevron-right" style="color:var(--text-muted)"></i></div>
                 </div>
             </div>
 
-            <button class="btn-submit" onclick="openModal('modalBank')">Ajukan Sekarang</button>
+            <div id="tab-pengaturan" class="tab-content">
+                 <div class="card" style="padding: 0;">
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <span>Notifikasi Push</span>
+                        <i class="fas fa-toggle-on" style="color: var(--success-color); font-size: 24px;"></i>
+                    </div>
+                    <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                        <span>Bahasa</span>
+                        <span style="color: var(--text-muted); font-size: 13px;">Indonesia <i class="fas fa-chevron-right" style="margin-left:8px;"></i></span>
+                    </div>
+                    <div style="padding: 16px; display: flex; justify-content: space-between; color: var(--danger-color); font-weight: 600; cursor: pointer;">
+                        <span>Keluar Akun</span><i class="fas fa-sign-out-alt"></i>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <nav class="bottom-nav">
-            <a href="#" class="nav-item active"><i class="fas fa-home"></i>Dashboard</a>
-            <a href="#" class="nav-item"><i class="fas fa-wallet"></i>Pinjaman</a>
-            <a href="#" class="nav-item"><i class="fas fa-user"></i>Profil</a>
-            <a href="#" class="nav-item"><i class="fas fa-cog"></i>Pengaturan</a>
+            <a href="#" class="nav-item active" data-target="tab-dashboard"><i class="fas fa-home"></i>Dashboard</a>
+            <a href="#" class="nav-item" data-target="tab-pinjaman"><i class="fas fa-wallet"></i>Pinjaman</a>
+            <a href="#" class="nav-item" data-target="tab-profil"><i class="fas fa-user"></i>Profil</a>
+            <a href="#" class="nav-item" data-target="tab-pengaturan"><i class="fas fa-cog"></i>Pengaturan</a>
         </nav>
 
         <div class="modal-overlay" id="modalBank">
@@ -401,15 +449,35 @@
                     <h2>Pilih Rekening Pencairan</h2>
                     <button class="close-modal" onclick="closeModal('modalBank')"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="bank-item" onclick="selectBank()">
-                    <div class="bank-icon">BCA</div>
-                    <div class="bank-details">
-                        <h4>Bank Central Asia (BCA)</h4>
-                        <p>a.n John Doe • 1234567890</p>
-                    </div>
-                    <i class="fas fa-chevron-right" style="margin-left:auto; color:var(--text-muted)"></i>
+                <div id="bankListContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
+                
+                <button class="btn-secondary" style="margin-top:20px" onclick="openAddBank()">+ Tambah Rekening Baru</button>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalAddBank">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Tambah Rekening Baru</h2>
+                    <button class="close-modal" onclick="closeModal('modalAddBank')"><i class="fas fa-times"></i></button>
                 </div>
-                <button class="btn-secondary" style="margin-top:20px">+ Tambah Rekening Baru</button>
+                
+                <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">Nama Bank</label>
+                <select class="form-input" id="inputBank">
+                    <option value="" disabled selected>Pilih Bank</option>
+                    <option value="BCA">Bank Central Asia (BCA)</option>
+                    <option value="Mandiri">Bank Mandiri</option>
+                    <option value="BRI">Bank Rakyat Indonesia (BRI)</option>
+                    <option value="BNI">Bank Negara Indonesia (BNI)</option>
+                </select>
+
+                <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">Nama Pemilik Rekening</label>
+                <input type="text" class="form-input" id="inputName" placeholder="Sesuai KTP" autocomplete="off">
+
+                <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">Nomor Rekening</label>
+                <input type="number" class="form-input" id="inputNumber" placeholder="Contoh: 1234567890" autocomplete="off">
+
+                <button class="btn-submit" style="margin-top: 10px;" onclick="saveNewBank()">Simpan Rekening</button>
             </div>
         </div>
 
@@ -476,17 +544,89 @@
     </div>
 
     <script>
-        /* --- STATE MANAGEMENT --- */
-        let state = {
-            amount: 5000000,
-            tenor: 6,
-            rate: 0.015, // 1.5% flat
-            adminFeeRate: 0.005, // 0.5%
-            theme: 'light'
-        };
+        /* --- STATE, DATA NOTIF & DATA BANK (LOCAL STORAGE) --- */
+        let state = { amount: 5000000, tenor: 6, rate: 0.0733333333, adminFeeRate: 0.005, theme: 'light' };
 
-        let notifications = []; // Simulating DB for notifications
+        // Tarik data dari memori perangkat, jika kosong pakai data bawaan (default)
+        let notifications = JSON.parse(localStorage.getItem('dana_pinjam_notif')) || [];
+        let savedBanks = JSON.parse(localStorage.getItem('dana_pinjam_banks')) || [
+            { id: 1, bank: 'BCA', name: 'John Doe', number: '1234567890' }
+        ];
 
+        // Fungsi penyimpan ke Local Storage
+        function saveAppMemories() {
+            localStorage.setItem('dana_pinjam_notif', JSON.stringify(notifications));
+            localStorage.setItem('dana_pinjam_banks', JSON.stringify(savedBanks));
+        }
+
+        /* --- LOGIKA NAVIGASI BAWAH & TAB --- */
+        const navItems = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = item.getAttribute('data-target');
+                
+                // Ubah gaya ikon aktif
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Ubah tampilan halaman
+                tabContents.forEach(tab => tab.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        /* --- LOGIKA BANK --- */
+        function renderBanks() {
+            const container = document.getElementById('bankListContainer');
+            container.innerHTML = '';
+            savedBanks.forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'bank-item';
+                item.onclick = () => selectBank(b); // Pilih bank ini
+                item.innerHTML = `
+                    <div class="bank-icon">${b.bank.substring(0,3)}</div>
+                    <div class="bank-details">
+                        <h4>Bank ${b.bank}</h4>
+                        <p>a.n ${b.name} • ${b.number}</p>
+                    </div>
+                    <i class="fas fa-chevron-right" style="margin-left:auto; color:var(--text-muted)"></i>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function openAddBank() {
+            closeModal('modalBank');
+            setTimeout(() => openModal('modalAddBank'), 300);
+        }
+
+        function saveNewBank() {
+            const bank = document.getElementById('inputBank').value;
+            const name = document.getElementById('inputName').value;
+            const number = document.getElementById('inputNumber').value;
+            
+            if(!bank || !name || !number) {
+                showToast('Harap isi kelengkapan data!');
+                return;
+            }
+            
+            // Simpan bank baru
+            savedBanks.push({ id: Date.now(), bank, name, number });
+            saveAppMemories();
+            renderBanks(); // Refresh list ui
+            
+            // Bersihkan input
+            document.getElementById('inputName').value = '';
+            document.getElementById('inputNumber').value = '';
+            
+            closeModal('modalAddBank');
+            setTimeout(() => openModal('modalBank'), 300);
+            showToast('Rekening berhasil disimpan');
+        }
+        
         /* --- DOM ELEMENTS --- */
         const amountInput = document.getElementById('amountInput');
         const amountSlider = document.getElementById('amountSlider');
@@ -627,7 +767,6 @@
         }
 
         function generateVerificationNotification() {
-            // Create new notification object
             const newNotif = {
                 id: Date.now(),
                 title: 'Status Pinjaman Terverifikasi',
@@ -635,9 +774,8 @@
                 time: 'Baru saja',
                 isRead: false
             };
-            notifications.unshift(newNotif); // Add to top
-
-            // UI Updates
+            notifications.unshift(newNotif); 
+            saveAppMemories(); // Amankan data ke memori
             showToast('Status detail pinjaman terverifikasi');
             renderNotifications();
         }
@@ -681,19 +819,18 @@
             const notif = notifications.find(n => n.id === id);
             if(notif) {
                 notif.isRead = true;
-                
-                // Populate Detail Modal
+                saveAppMemories(); // Amankan data ke memori
                 document.getElementById('detTitle').textContent = notif.title;
                 document.getElementById('detTime').textContent = notif.time;
                 document.getElementById('detMsg').textContent = notif.message;
-                
-                renderNotifications(); // update dot & list UI
+                renderNotifications();
                 openModal('modalNotifDetail');
             }
         }
 
         function markAllAsRead() {
             notifications.forEach(n => n.isRead = true);
+            saveAppMemories(); // Amankan data ke memori
             renderNotifications();
         }
 
