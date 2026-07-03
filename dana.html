@@ -697,9 +697,20 @@
             renderNotifications();
         }
 
-        /* --- THEME TOGGLE (Dark/Light) --- */
+        /* --- THEME TOGGLE (Dark/Light) DENGAN LOCAL STORAGE --- */
         function toggleTheme() {
+            // Ubah state
             state.theme = state.theme === 'light' ? 'dark' : 'light';
+            
+            // Simpan pilihan ke local storage browser
+            localStorage.setItem('dana_pinjam_theme', state.theme);
+            
+            // Terapkan perubahan visual
+            applyTheme();
+        }
+
+        // Fungsi khusus untuk menerapkan visual tema
+        function applyTheme() {
             if(state.theme === 'dark') {
                 appContainer.setAttribute('data-theme', 'dark');
                 themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
@@ -709,7 +720,31 @@
             }
         }
 
+        // Fungsi untuk mengecek Local Storage saat halaman pertama kali dimuat
+        function initTheme() {
+            const savedTheme = localStorage.getItem('dana_pinjam_theme');
+            if (savedTheme) {
+                state.theme = savedTheme; // Gunakan tema yang tersimpan jika ada
+            }
+            applyTheme(); // Terapkan ke UI
+        }
+
+        /* --- BOTTOM NAV LOGIC --- */
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault(); // Mencegah lompat ke atas layar saat diklik
+                
+                // Hapus warna aktif dari semua ikon
+                navItems.forEach(nav => nav.classList.remove('active'));
+                
+                // Beri warna aktif pada ikon yang sedang diklik
+                item.classList.add('active');
+            });
+        });
+
         // Initialize First Load
+        initTheme(); // Memuat tema yang tersimpan
         calculateLoan();
         renderNotifications();
         
