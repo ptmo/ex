@@ -1434,6 +1434,17 @@
             requirePinForAction(confirmPayment);
         };
 
+        // Registrasi Service Worker PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    console.log('PWA Service Worker terdaftar!', registration.scope);
+                }).catch((error) => {
+                    console.error('PWA Service Worker gagal:', error);
+                });
+            });
+        }
+
         // 7. Deteksi Jaringan (Offline Mode)
         window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
         window.addEventListener('online', () => document.getElementById('offlineBanner').classList.remove('show'));      
