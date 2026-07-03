@@ -4,17 +4,17 @@
   "description": "Aplikasi Pinjaman Online Premium",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0B1C3D",
-  "theme_color": "#0B1C3D",
+  "background_color": "#fff",
+  "theme_color": "#fff",
   "icons": [
     {
-      "src": "go.png",
+      "src": "go2.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "go.png",
+      "src": "go2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
