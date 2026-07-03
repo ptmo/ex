@@ -1053,12 +1053,32 @@
                     </div>
                     <div>
                         ${inst.isPaid 
-                            ? `<span class="paid-badge"><i class="fas fa-check-circle"></i> Berhasil</span>` 
+                            ? `<div style="display: flex; align-items: center; gap: 8px;">
+                                   <span class="paid-badge" style="font-size: 11px;"><i class="fas fa-check-circle"></i> Lunas</span>
+                                   <button onclick="viewReceipt(${index})" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success-color); color: var(--success-color); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer;"><i class="fas fa-receipt" style="margin-right:4px;"></i> Struk</button>
+                               </div>` 
                             : `<button class="btn-pay" onclick="openPaymentModal(${index})">Bayar <i class="fas fa-chevron-right" style="margin-left:4px; font-size:10px;"></i></button>`}
                     </div>
                 `;
                 listContainer.appendChild(item);
             });
+        }
+
+        function viewReceipt(index) {
+            const inst = activeLoan.installments[index];
+            
+            // Ambil data historis dari memori. (Atau tampilkan teks default jika transaksi dilakukan sebelum fitur ini ada)
+            const timeStr = inst.paymentTime || "Waktu tidak tercatat";
+            const methodStr = inst.paymentMethod || "Transfer Sistem";
+
+            // Isi rincian data ke dalam modal struk
+            document.getElementById('receiptTime').textContent = timeStr;
+            document.getElementById('receiptMethod').textContent = methodStr;
+            document.getElementById('receiptMonth').textContent = inst.month;
+            document.getElementById('receiptAmount').textContent = 'Rp ' + formatRupiah(inst.amount);
+            
+            // Tampilkan Struk
+            openModal('modalReceipt');
         }
 
         function openPaymentModal(index) {
@@ -1081,8 +1101,10 @@
                 const now = new Date();
                 const timeString = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
 
-                // 1. Ubah status menjadi lunas
+                // 1. Ubah status menjadi lunas DAN simpan data historis ke struk
                 activeLoan.installments[selectedInstallmentIndex].isPaid = true;
+                activeLoan.installments[selectedInstallmentIndex].paymentTime = timeString; // Menyimpan waktu permanen
+                activeLoan.installments[selectedInstallmentIndex].paymentMethod = method; // Menyimpan metode permanen
                 
                 // 2. Buat Notifikasi Baru (Struk Digital)
                 const newNotif = {
@@ -1103,14 +1125,8 @@
                 // 4. Tutup modal bayar lama
                 closeModal('modalPayment');
                 
-                // 5. Isi data ke dalam modal struk popup baru
-                document.getElementById('receiptTime').textContent = timeString;
-                document.getElementById('receiptMethod').textContent = method;
-                document.getElementById('receiptMonth').textContent = inst.month;
-                document.getElementById('receiptAmount').textContent = 'Rp ' + amountFormatted;
-                
-                // Munculkan popup nota pembayaran
-                setTimeout(() => openModal('modalReceipt'), 300);
+                // 5. Buka popup rincian struk setelah jeda sedikit menggunakan fungsi viewReceipt
+                setTimeout(() => viewReceipt(selectedInstallmentIndex), 300);
             }
         }
 
