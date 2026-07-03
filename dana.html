@@ -1707,6 +1707,22 @@
             oldExecuteClearDataHistory();
         };
 
+        /* --- PERBAIKAN REAL-TIME RIWAYAT --- */
+        
+        // Paksa Riwayat ter-update otomatis setiap kali bayar cicilan bulanan
+        const oldConfirmPaymentForHistory = confirmPayment;
+        confirmPayment = function() {
+            oldConfirmPaymentForHistory();
+            if (typeof renderHistoryTab === 'function') renderHistoryTab(); 
+        };
+
+        // Paksa Riwayat ter-update otomatis setiap kali tombol "Lunasi Semua" diklik
+        const oldEarlyRepaymentForHistory = earlyRepayment;
+        earlyRepayment = function() {
+            oldEarlyRepaymentForHistory();
+            if (typeof renderHistoryTab === 'function') renderHistoryTab(); 
+        };
+
         // 7. Deteksi Jaringan (Offline Mode)
         window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
         window.addEventListener('online', () => document.getElementById('offlineBanner').classList.remove('show'));      
