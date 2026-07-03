@@ -263,7 +263,9 @@
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 500; gap: 4px;
-            width: 25%; transition: var(--transition); cursor: pointer;
+            /* DIUBAH DARI 25% MENJADI 20% KARENA SEKARANG ADA 5 MENU */
+            width: 20%; 
+            transition: var(--transition); cursor: pointer;
         }
         .nav-item i { font-size: 20px; margin-bottom: 2px; }
         .nav-item.active { color: var(--accent-color); }
@@ -553,7 +555,22 @@
                 </select>
                 <button class="btn-submit" onclick="confirmPayment()">Bayar Sekarang</button>
             </div>
-</div>
+        </div>
+
+            <div id="tab-riwayat" class="tab-content">
+                <div style="margin-bottom: 20px; color: var(--text-main); padding: 0 4px;">
+                    <h2 style="font-size: 18px; font-weight: 700;">Riwayat Pinjaman</h2>
+                    <p style="font-size: 13px; color: var(--text-muted);">Catatan seluruh transaksi pencairan Anda</p>
+                </div>
+                
+                <div id="emptyHistoryState" class="card" style="text-align: center; padding: 40px 24px;">
+                    <i class="fas fa-receipt" style="font-size: 48px; color: var(--border-color); margin-bottom: 16px;"></i>
+                    <h3 style="margin-bottom: 8px;">Belum Ada Riwayat</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">Anda belum pernah melakukan pencairan dana.</p>
+                </div>
+
+                <div id="historyListContainer"></div>
+            </div>
 
             <div id="tab-profil" class="tab-content">
                 <div class="card" style="display: flex; align-items: center; gap: 16px;">
@@ -595,6 +612,7 @@
         <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-target="tab-dashboard"><i class="fas fa-home"></i>Dashboard</a>
             <a href="#" class="nav-item" data-target="tab-pinjaman"><i class="fas fa-wallet"></i>Pinjaman</a>
+            <a href="#" class="nav-item" data-target="tab-riwayat"><i class="fas fa-history"></i>Riwayat</a>
             <a href="#" class="nav-item" data-target="tab-profil"><i class="fas fa-user"></i>Profil</a>
             <a href="#" class="nav-item" data-target="tab-pengaturan"><i class="fas fa-cog"></i>Pengaturan</a>
         </nav>
@@ -782,6 +800,31 @@
                     <button class="btn-secondary" style="margin-top: 0;" onclick="closeModal('modalClearData')">Batal</button>
                     <button class="btn-submit" style="margin-top: 0; background-color: var(--danger-color); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);" onclick="executeClearData()">Ya, Hapus</button>
                 </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modalLoanHistoryDetail">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Detail Pencairan</h2>
+                    <button class="close-modal" onclick="closeModal('modalLoanHistoryDetail')"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <span id="hdStatus" style="font-size: 14px; font-weight: 700;">-</span>
+                    <h3 style="font-size: 28px; font-weight: 800; color: var(--text-main); margin-top: 8px;" id="hdAmount">Rp 0</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">ID Transaksi: <strong id="hdId"></strong></p>
+                </div>
+
+                <div class="receipt-box">
+                    <div class="receipt-row"><span>Waktu Cair</span><span id="hdTime" style="font-weight: 600;">-</span></div>
+                    <div class="receipt-row"><span>Dikirim Ke</span><span id="hdBank" style="font-weight: 600; text-align: right; max-width: 60%;"></span></div>
+                    <div class="receipt-row" style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;"><span>Biaya Admin (0.5%)</span><span id="hdAdmin" class="text-danger">Rp 0</span></div>
+                    <div class="receipt-row"><span>Total Diterima (Bersih)</span><span id="hdNet" class="text-success" style="font-weight: 700;">Rp 0</span></div>
+                    <div class="receipt-row" style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;"><span>Lama Tenor</span><span id="hdTenor">0 Bulan</span></div>
+                    <div class="receipt-row"><span>Cicilan Per Bulan</span><span id="hdMonthly">Rp 0</span></div>
+                </div>
+                <button class="btn-submit" onclick="closeModal('modalLoanHistoryDetail')">Tutup Detail</button>
             </div>
         </div>
 
@@ -1498,6 +1541,172 @@
             window.location.reload();
         }
 
+        /* ======================================================
+           INJEKSI FITUR RIWAYAT PINJAMAN (HISTORY)
+           ====================================================== */
+        let loanHistory = JSON.parse(localStorage.getItem('dana_pinjam_history')) || [];
+        let selectedBankForLoan = savedBanks[0] || null;
+
+        // Modifikasi fungsi saveAppMemories untuk melacak pelunasan ke dalam riwayat
+        const oldSaveAppMemories = saveAppMemories;
+        saveAppMemories = function() {
+            if(activeLoan) {
+                const index = loanHistory.findIndex(l => l.id === activeLoan.id);
+                if(index !== -1) loanHistory[index] = activeLoan; // Sinkronkan pelunasan
+            }
+            oldSaveAppMemories();
+            localStorage.setItem('dana_pinjam_history', JSON.stringify(loanHistory));
+        };
+
+        // Mengambil memori bank yang diklik saat proses pencairan
+        selectBank = function(b) {
+            if(b) selectedBankForLoan = b;
+            closeModal('modalBank');
+            
+            const P = state.amount;
+            const adminFee = P * state.adminFeeRate;
+            const totalInterest = P * state.rate * state.tenor;
+            const totalPayment = P + totalInterest;
+            const netReceived = P - adminFee;
+            const monthly = totalPayment / state.tenor;
+
+            document.getElementById('rBersih').textContent = 'Rp ' + formatRupiah(netReceived);
+            document.getElementById('rNominal').textContent = 'Rp ' + formatRupiah(totalPayment);
+            document.getElementById('rCicilan').textContent = 'Rp ' + formatRupiah(monthly);
+            document.getElementById('rTenor').textContent = state.tenor + ' Bulan';
+
+            const totalPie = P + totalInterest + adminFee;
+            const pPokok = (P / totalPie) * 100;
+            const pBunga = (totalInterest / totalPie) * 100;
+            document.getElementById('pieChart').style.background = `conic-gradient(var(--accent-color) 0% ${pPokok}%, var(--primary-color) ${pPokok}% ${pPokok + pBunga}%, var(--danger-color) ${pPokok + pBunga}% 100%)`;
+
+            setTimeout(() => openModal('modalConfirm'), 300);
+        };
+
+        // Modifikasi pencairan untuk dicetak ke Struk Riwayat permanen
+        generateVerificationNotification = function() {
+            const P = state.amount;
+            const T = state.tenor;
+            const R = state.rate;
+            const monthly = (P + (P * R * T)) / T;
+            const adminFee = P * state.adminFeeRate;
+            
+            const installments = [];
+            const today = new Date();
+            for(let i = 1; i <= T; i++) {
+                let dueDate = new Date(today);
+                dueDate.setMonth(today.getMonth() + i);
+                installments.push({ month: i, dueDate: dueDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }), amount: monthly, isPaid: false });
+            }
+
+            const now = new Date();
+            const timeString = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+            const trxId = 'TRX' + Date.now(); // Buat ID unik berdasarkan waktu
+
+            const newLoan = { 
+                id: trxId, amount: P, tenor: T, monthly: monthly, adminFee: adminFee, netReceived: P - adminFee,
+                bankDetails: selectedBankForLoan ? `${selectedBankForLoan.bank} • ${selectedBankForLoan.number}` : '-',
+                time: timeString, installments: installments 
+            };
+
+            activeLoan = newLoan;
+            loanHistory.unshift(newLoan); // Masukkan ke urutan paling atas di tab riwayat
+
+            const newNotif = {
+                id: Date.now(), title: 'Pencairan Dana Berhasil',
+                message: `Dana Rp ${formatRupiah(P)} telah dicairkan ke ${newLoan.bankDetails}. ID Transaksi: ${trxId}.`,
+                time: 'Baru saja', isRead: false
+            };
+            
+            notifications.unshift(newNotif); 
+            saveAppMemories();
+            showToast('Dana berhasil dicairkan!');
+            renderNotifications();
+            renderPinjamanTab(); 
+            updateDashboardState();
+            renderHistoryTab(); // Segarkan tampilan tab Riwayat
+        };
+
+        // Fungsi menggambar daftar riwayat secara dinamis
+        function renderHistoryTab() {
+            const container = document.getElementById('historyListContainer');
+            const emptyState = document.getElementById('emptyHistoryState');
+
+            if(loanHistory.length === 0) {
+                emptyState.style.display = 'block';
+                container.innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = '';
+
+            loanHistory.forEach(loan => {
+                const isLunas = loan.installments.every(i => i.isPaid);
+                const statusBadge = isLunas 
+                    ? `<span style="background: rgba(16, 185, 129, 0.1); color: var(--success-color); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;"><i class="fas fa-check"></i> LUNAS</span>`
+                    : `<span style="background: rgba(212, 175, 55, 0.1); color: var(--accent-color); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;"><i class="fas fa-sync fa-spin"></i> BERJALAN</span>`;
+
+                const item = document.createElement('div');
+                item.className = 'card';
+                item.style.padding = '16px';
+                item.style.marginBottom = '12px';
+                item.style.marginTop = '0';
+                item.style.cursor = 'pointer';
+                item.onclick = () => openHistoryDetail(loan.id); // Klik memanggil detail
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight:600;"><i class="fas fa-receipt" style="margin-right:4px;"></i>${loan.id}</span>
+                        ${statusBadge}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <p style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Rp ${formatRupiah(loan.amount)}</p>
+                            <p style="font-size: 12px; color: var(--text-muted);">${loan.time}</p>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--border-color);"></i>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Fungsi mencetak data ke dalam popup struk detail
+        function openHistoryDetail(id) {
+            const loan = loanHistory.find(l => l.id === id);
+            if(!loan) return;
+
+            const isLunas = loan.installments.every(i => i.isPaid);
+
+            document.getElementById('hdId').textContent = loan.id;
+            document.getElementById('hdTime').textContent = loan.time;
+            document.getElementById('hdBank').textContent = loan.bankDetails;
+            document.getElementById('hdAmount').textContent = 'Rp ' + formatRupiah(loan.amount);
+            document.getElementById('hdAdmin').textContent = '- Rp ' + formatRupiah(loan.adminFee);
+            document.getElementById('hdNet').textContent = 'Rp ' + formatRupiah(loan.netReceived);
+            document.getElementById('hdTenor').textContent = loan.tenor + ' Bulan';
+            document.getElementById('hdMonthly').textContent = 'Rp ' + formatRupiah(loan.monthly);
+            
+            const statusBadge = document.getElementById('hdStatus');
+            if(isLunas) {
+                statusBadge.className = 'text-success';
+                statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> LUNAS';
+            } else {
+                statusBadge.className = '';
+                statusBadge.style.color = 'var(--accent-color)';
+                statusBadge.innerHTML = '<i class="fas fa-sync fa-spin"></i> SEDANG BERJALAN';
+            }
+
+            openModal('modalLoanHistoryDetail');
+        }
+
+        // Amankan agar clear data ikut menghapus memory riwayat
+        const oldExecuteClearDataHistory = executeClearData;
+        executeClearData = function() {
+            localStorage.removeItem('dana_pinjam_history');
+            oldExecuteClearDataHistory();
+        };
+
         // 7. Deteksi Jaringan (Offline Mode)
         window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
         window.addEventListener('online', () => document.getElementById('offlineBanner').classList.remove('show'));      
@@ -1510,6 +1719,7 @@
         renderPinjamanTab(); 
         updateDashboardState();
         injectKycUI();
+        renderHistoryTab();
         
     </script>
 </body>
