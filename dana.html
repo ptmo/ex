@@ -646,7 +646,8 @@
                 </div>
                 <div class="card" style="padding: 0;">
                     <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; cursor: pointer;"><span>Informasi Pribadi</span><i class="fas fa-chevron-right" style="color:var(--text-muted)"></i></div>
-                    <div style="padding: 16px; display: flex; justify-content: space-between; cursor: pointer;" onclick="openModal('modalBank')"><span>Daftar Rekening Bank</span><i class="fas fa-chevron-right" style="color:var(--text-muted)"></i></div>
+                    
+                    <div style="padding: 16px; display: flex; justify-content: space-between; cursor: pointer;" onclick="openManageBanks()"><span>Daftar Rekening Bank</span><i class="fas fa-chevron-right" style="color:var(--text-muted)"></i></div>
                 </div>
             </div>
 
@@ -679,6 +680,18 @@
             <a href="#" class="nav-item" data-target="tab-profil"><i class="fas fa-user"></i>Profil</a>
             <a href="#" class="nav-item" data-target="tab-pengaturan"><i class="fas fa-cog"></i>Pengaturan</a>
         </nav>
+
+        <div class="modal-overlay" id="modalManageBanks">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Daftar Rekening Anda</h2>
+                    <button class="close-modal" onclick="closeModal('modalManageBanks')"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="manageBankListContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
+                
+                <button class="btn-secondary" style="margin-top:20px" onclick="openAddBankFromManage()">+ Tambah Rekening Baru</button>
+            </div>
+        </div>
 
         <div class="modal-overlay" id="modalBank">
             <div class="modal-content">
@@ -1848,6 +1861,80 @@
                 document.getElementById('customOptions').classList.remove('open');
             }
         });
+
+        /* --- PERBAIKAN BUG BOCOR KELOLA REKENING DI PROFIL --- */
+        let isFromManage = false; // Penanda darimana tombol tambah rekening diklik
+
+        function openManageBanks() {
+            isFromManage = true;
+            renderManageBanks();
+            openModal('modalManageBanks');
+        }
+
+        // Render daftar rekening khusus profil (Tanpa fungsi pencairan)
+        function renderManageBanks() {
+            const container = document.getElementById('manageBankListContainer');
+            container.innerHTML = '';
+            savedBanks.forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'bank-item';
+                item.style.cursor = 'default'; // Kursor diubah jadi panah biasa (bukan pointer)
+                
+                // PENTING: Tidak ada "onclick = selectBank(b)" di HTML bawah ini
+                item.innerHTML = `
+                    <div class="bank-icon">${b.bank.substring(0,3)}</div>
+                    <div class="bank-details">
+                        <h4>Bank ${b.bank}</h4>
+                        <p>a.n ${b.name} • ${b.number}</p>
+                    </div>
+                    <i class="fas fa-check-circle" style="margin-left:auto; color:var(--success-color)"></i>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function openAddBankFromManage() {
+            closeModal('modalManageBanks');
+            setTimeout(() => openModal('modalAddBank'), 300);
+        }
+
+        // Beri tahu sistem jika tambah bank diakses dari tombol Dasbor (Pinjaman)
+        const oldOpenAddBank = openAddBank;
+        openAddBank = function() {
+            isFromManage = false;
+            oldOpenAddBank();
+        };
+
+        // Timpa fungsi saveNewBank agar bisa membedakan modal mana yang harus dibuka kembali
+        saveNewBank = function() {
+            const bank = document.getElementById('inputBank').value;
+            const name = document.getElementById('inputName').value;
+            const number = document.getElementById('inputNumber').value;
+            
+            if(!bank || !name || !number) {
+                showToast('Harap isi kelengkapan data!');
+                return;
+            }
+            
+            savedBanks.push({ id: Date.now(), bank, name, number });
+            saveAppMemories();
+            renderBanks(); // Update daftar di modal pencairan
+            if(typeof renderManageBanks === 'function') renderManageBanks(); // Update daftar di modal profil
+            
+            // Bersihkan input
+            document.getElementById('inputName').value = '';
+            document.getElementById('inputNumber').value = '';
+            
+            closeModal('modalAddBank');
+            
+            // Logika cerdas: Kembalikan user ke tempat asalnya
+            if(isFromManage) {
+                setTimeout(() => openModal('modalManageBanks'), 300);
+            } else {
+                setTimeout(() => openModal('modalBank'), 300);
+            }
+            showToast('Rekening berhasil disimpan');
+        };
 
         // 7. Deteksi Jaringan (Offline Mode)
         window.addEventListener('offline', () => document.getElementById('offlineBanner').classList.add('show'));
