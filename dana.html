@@ -232,12 +232,21 @@
             padding: 14px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px;
         }
 
-        /* Perbaikan Navbar Bottom (Fix di bawah layar) */
+        /* Perbaikan Navbar Bottom (Benar-benar FIX di bawah layar) */
         .bottom-nav {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
-            background-color: var(--card-bg); border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 20; transition: var(--transition);
+            position: fixed; /* Mengunci ke layar, bukan ke container parent */
+            bottom: 0; 
+            width: 100%; 
+            max-width: 414px; /* Mengikuti ukuran maksimal mobile-app Anda */
+            height: 70px;
+            background-color: var(--card-bg); 
+            border-top: 1px solid var(--border-color);
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center;
+            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.08); /* Shadow sedikit dipertajam */
+            z-index: 90; /* Selalu mengapung di atas konten halaman */
+            transition: var(--transition);
         }
 
         .nav-item {
