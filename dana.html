@@ -1306,14 +1306,21 @@
         // 4. Modifikasi Progress Bar & Pelunasan Dipercepat di Tab Pinjaman
         const oldRenderPinjaman = renderPinjamanTab;
         renderPinjamanTab = function() {
-            oldRenderPinjaman();
+            oldRenderPinjaman(); // Jalankan render daftar cicilan bawaan
+
+            // Hapus progress bar lama (jika ada) agar bisa digambar ulang secara real-time
+            const existingProgress = document.querySelector('.progress-wrapper');
+            if(existingProgress) {
+                existingProgress.remove();
+            }
+
             if(activeLoan) {
                 const totalBulan = activeLoan.tenor;
                 const lunasCount = activeLoan.installments.filter(i => i.isPaid).length;
                 const progressPersen = (lunasCount / totalBulan) * 100;
                 const isSemuaLunas = (lunasCount === totalBulan);
 
-                // Buat Elemen Progress Bar
+                // Buat Elemen Progress Bar Baru dengan data terupdate
                 const progHtml = `
                 <div class="progress-wrapper">
                     <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600;">
@@ -1326,11 +1333,9 @@
                     ${(!isSemuaLunas && lunasCount >= 2) ? `<button class="btn-secondary" style="width:100%; font-size:12px; padding:10px; margin-top:12px; border-color:var(--accent-color); color:var(--accent-color);" onclick="requirePinForAction(earlyRepayment)"><i class="fas fa-bolt" style="margin-right:6px;"></i>Lunasi Semua Sisa Tagihan (Diskon Bunga)</button>` : ''}
                 </div>`;
                 
-                // Sisipkan di atas daftar cicilan
+                // Sisipkan persis di atas daftar cicilan
                 const listContainer = document.getElementById('installmentList');
-                if(!document.querySelector('.progress-wrapper')) {
-                    listContainer.insertAdjacentHTML('beforebegin', progHtml);
-                }
+                listContainer.insertAdjacentHTML('beforebegin', progHtml);
             }
         };
 
