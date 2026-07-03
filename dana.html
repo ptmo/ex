@@ -503,7 +503,9 @@
                     </div>
                 </div>
 
-                <button class="btn-submit" id="btnSubmitAjukan" onclick="openModal('modalBank')">Ajukan Sekarang</button>
+                <button class="btn-submit" id="btnSubmitAjukan" onclick="openModal('modalBank')">
+                    <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>Ajukan Sekarang
+                </button>
             </div>
 
             <div id="tab-pinjaman" class="tab-content">
@@ -1264,16 +1266,18 @@
                 btnSubmit.style.background = 'var(--border-color)';
                 btnSubmit.style.color = 'var(--text-muted)';
                 btnSubmit.style.boxShadow = 'none';
-                btnSubmit.textContent = 'Pinjaman Sedang Berjalan';
+                // Gunakan innerHTML agar ikon gembok masuk
+                btnSubmit.innerHTML = '<i class="fas fa-lock" style="margin-right: 8px;"></i>Pinjaman Sedang Berjalan';
                 slider.disabled = true;
                 inputAmount.disabled = true;
             } else {
                 // Buka form pengajuan (Reset)
                 btnSubmit.disabled = false;
                 btnSubmit.style.background = 'var(--accent-color)';
-                btnSubmit.style.color = '#000';
+                btnSubmit.style.color = '#ffffff'; // <--- Diubah ke putih disini juga
                 btnSubmit.style.boxShadow = '0 8px 20px rgba(212, 175, 55, 0.3)';
-                btnSubmit.textContent = 'Ajukan Sekarang';
+                // Gunakan innerHTML agar ikon pesawat terbang masuk
+                btnSubmit.innerHTML = '<i class="fas fa-paper-plane" style="margin-right: 8px;"></i>Ajukan Sekarang';
                 slider.disabled = false;
                 inputAmount.disabled = false;
             }
