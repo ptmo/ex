@@ -312,6 +312,28 @@
         .bank-details h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-main); }
         .bank-details p { font-size: 12px; color: var(--text-muted); }
 
+        /* Installment (Cicilan) List */
+        .installment-item {
+            background: var(--card-bg); padding: 16px; border-radius: var(--radius-md);
+            margin-bottom: 12px; border: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: var(--transition);
+        }
+        /* Efek Chromatic (Abu-abu/Redup) untuk yang sudah lunas */
+        .installment-item.paid {
+            opacity: 0.5; filter: grayscale(100%); pointer-events: none; border-color: transparent;
+        }
+        .installment-info h4 { font-size: 14px; margin-bottom: 6px; color: var(--text-main); }
+        .installment-info p { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        
+        .btn-pay {
+            background: var(--accent-color); color: var(--primary-color); border: none;
+            padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2); transition: var(--transition);
+        }
+        .btn-pay:hover { transform: scale(1.05); }
+        .paid-badge { color: var(--success-color); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+
         /* Receipt */
         .receipt-box { background: var(--bg-color); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px dashed var(--border-color); }
         .receipt-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; color: var(--text-main); }
@@ -414,12 +436,51 @@
             </div>
 
             <div id="tab-pinjaman" class="tab-content">
-                <div class="card" style="text-align: center; padding: 40px 24px;">
+                <div id="emptyLoanState" class="card" style="text-align: center; padding: 40px 24px;">
                     <i class="fas fa-box-open" style="font-size: 48px; color: var(--border-color); margin-bottom: 16px;"></i>
                     <h3 style="margin-bottom: 8px;">Belum Ada Pinjaman Aktif</h3>
                     <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Riwayat tagihan dan kontrak pinjaman Anda akan otomatis muncul di sini setelah pengajuan disetujui.</p>
                 </div>
+                
+                <div id="activeLoanState" style="display:none;">
+                    <div class="result-section" style="margin-bottom: 20px;">
+                        <div class="result-row">
+                            <span class="result-label">Sisa Tagihan Berjalan</span>
+                            <span class="highlight-value" id="loanTotalLeft">Rp 0</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Cicilan Per Bulan</span>
+                            <span class="result-value" id="loanMonthly">Rp 0</span>
+                        </div>
+                    </div>
+                    <h3 style="font-size: 15px; margin-bottom: 12px; color: var(--text-main);">Jadwal Pembayaran</h3>
+                    <div id="installmentList">
+                        </div>
+                </div>
             </div>
+
+<div class="modal-overlay" id="modalPayment">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Pembayaran Tagihan</h2>
+                    <button class="close-modal" onclick="closeModal('modalPayment')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="receipt-box">
+                    <div class="receipt-row"><span>Cicilan Ke</span><span id="payMonth">0</span></div>
+                    <div class="receipt-row"><span>Jatuh Tempo</span><span id="payDate">-</span></div>
+                    <div class="receipt-row" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 12px;"><span>Denda Keterlambatan</span><span>Rp 0</span></div>
+                    <div class="receipt-row"><span>Total Bayar</span><span id="payAmount" class="text-success" style="font-size:18px; font-weight:800;">Rp 0</span></div>
+                </div>
+                <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">Metode Pembayaran</label>
+                <select class="form-input" id="paymentMethod">
+                    <option value="VA BCA">Virtual Account BCA</option>
+                    <option value="VA Mandiri">Virtual Account Mandiri</option>
+                    <option value="Gopay">GoPay</option>
+                    <option value="Dana">DANA</option>
+                </select>
+                <button class="btn-submit" onclick="confirmPayment()">Bayar Sekarang</button>
+            </div>
+</div>
 
             <div id="tab-profil" class="tab-content">
                 <div class="card" style="display: flex; align-items: center; gap: 16px;">
@@ -561,19 +622,19 @@
     </div>
 
     <script>
-        /* --- STATE, DATA NOTIF & DATA BANK (LOCAL STORAGE) --- */
+        /* --- STATE, DATA NOTIF, BANK & PINJAMAN (LOCAL STORAGE) --- */
         let state = { amount: 5000000, tenor: 6, rate: 0.0733333333, adminFeeRate: 0.005, theme: 'light' };
+        let selectedInstallmentIndex = null; // Menyimpan index cicilan yang mau dibayar
 
-        // Tarik data dari memori perangkat, jika kosong pakai data bawaan (default)
         let notifications = JSON.parse(localStorage.getItem('dana_pinjam_notif')) || [];
-        let savedBanks = JSON.parse(localStorage.getItem('dana_pinjam_banks')) || [
-            { id: 1, bank: 'BCA', name: 'John Doe', number: '1234567890' }
-        ];
+        let savedBanks = JSON.parse(localStorage.getItem('dana_pinjam_banks')) || [{ id: 1, bank: 'BRI', name: 'John Doe', number: '1234567890' }];
+        // Tambahan penyimpanan Pinjaman Aktif
+        let activeLoan = JSON.parse(localStorage.getItem('dana_pinjam_active_loan')) || null;
 
-        // Fungsi penyimpan ke Local Storage
         function saveAppMemories() {
             localStorage.setItem('dana_pinjam_notif', JSON.stringify(notifications));
             localStorage.setItem('dana_pinjam_banks', JSON.stringify(savedBanks));
+            localStorage.setItem('dana_pinjam_active_loan', JSON.stringify(activeLoan)); // Simpan data pinjaman
         }
 
         /* --- LOGIKA NAVIGASI BAWAH & TAB --- */
@@ -783,18 +844,102 @@
             setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
+        /* --- LOGIKA PINJAMAN & PEMBAYARAN --- */
         function generateVerificationNotification() {
+            // Hitung jadwal pinjaman baru
+            const P = state.amount;
+            const T = state.tenor;
+            const R = state.rate;
+            const monthly = (P + (P * R * T)) / T;
+            
+            const installments = [];
+            const today = new Date();
+            for(let i = 1; i <= T; i++) {
+                let dueDate = new Date(today);
+                dueDate.setMonth(today.getMonth() + i); // Tambah bulan sesuai urutan tenor
+                installments.push({
+                    month: i,
+                    dueDate: dueDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+                    amount: monthly,
+                    isPaid: false
+                });
+            }
+
+            // Aktifkan Pinjaman
+            activeLoan = { id: Date.now(), amount: P, tenor: T, monthly: monthly, installments: installments };
+
+            // Buat Notifikasi
             const newNotif = {
                 id: Date.now(),
                 title: 'Status Pinjaman Terverifikasi',
-                message: `Selamat, pengajuan pinjaman Anda sebesar Rp ${formatRupiah(state.amount)} telah berhasil diverifikasi secara otomatis dan segera dicairkan ke rekening Anda.`,
+                message: `Selamat, pengajuan pinjaman Anda sebesar Rp ${formatRupiah(state.amount)} telah berhasil diverifikasi dan kontrak telah aktif.`,
                 time: 'Baru saja',
                 isRead: false
             };
+            
             notifications.unshift(newNotif); 
-            saveAppMemories(); // Amankan data ke memori
+            saveAppMemories();
             showToast('Status detail pinjaman terverifikasi');
             renderNotifications();
+            renderPinjamanTab(); // Langsung render tab pinjaman saat disetujui
+        }
+
+        function renderPinjamanTab() {
+            const emptyState = document.getElementById('emptyLoanState');
+            const activeState = document.getElementById('activeLoanState');
+            const listContainer = document.getElementById('installmentList');
+
+            if(!activeLoan) {
+                emptyState.style.display = 'block';
+                activeState.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            activeState.style.display = 'block';
+
+            // Hitung sisa tagihan yang belum dibayar
+            let unpaidTotal = activeLoan.installments.filter(i => !i.isPaid).reduce((sum, i) => sum + i.amount, 0);
+            document.getElementById('loanTotalLeft').textContent = 'Rp ' + formatRupiah(unpaidTotal);
+            document.getElementById('loanMonthly').textContent = 'Rp ' + formatRupiah(activeLoan.monthly);
+
+            // Render List Cicilan
+            listContainer.innerHTML = '';
+            activeLoan.installments.forEach((inst, index) => {
+                const item = document.createElement('div');
+                item.className = `installment-item ${inst.isPaid ? 'paid' : ''}`;
+                item.innerHTML = `
+                    <div class="installment-info">
+                        <h4>Cicilan Ke-${inst.month}</h4>
+                        <p>Jatuh Tempo: ${inst.dueDate}</p>
+                    </div>
+                    <div>
+                        ${inst.isPaid 
+                            ? `<span class="paid-badge"><i class="fas fa-check-circle"></i> Lunas</span>` 
+                            : `<button class="btn-pay" onclick="openPaymentModal(${index})">Bayar <i class="fas fa-chevron-right" style="margin-left:4px; font-size:10px;"></i></button>`}
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function openPaymentModal(index) {
+            selectedInstallmentIndex = index;
+            const inst = activeLoan.installments[index];
+            document.getElementById('payMonth').textContent = inst.month;
+            document.getElementById('payDate').textContent = inst.dueDate;
+            document.getElementById('payAmount').textContent = 'Rp ' + formatRupiah(inst.amount);
+            openModal('modalPayment');
+        }
+
+        function confirmPayment() {
+            if(selectedInstallmentIndex !== null) {
+                activeLoan.installments[selectedInstallmentIndex].isPaid = true;
+                saveAppMemories();
+                renderPinjamanTab(); // Update UI langsung
+                closeModal('modalPayment');
+                showToast('Pembayaran Berhasil Dikonfirmasi!');
+            }
         }
 
         function renderNotifications() {
@@ -884,9 +1029,11 @@
         }
 
         // Initialize First Load
-        initTheme(); // Memuat tema yang tersimpan
+        initTheme(); 
         calculateLoan();
         renderNotifications();
+        renderBanks();
+        renderPinjamanTab(); // Load data pinjaman jika sebelumnya ada
         
     </script>
 </body>
