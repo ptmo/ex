@@ -239,6 +239,14 @@
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 20; transition: var(--transition);
         }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 500; gap: 4px;
+            width: 25%; transition: var(--transition); cursor: pointer;
+        }
+        .nav-item i { font-size: 20px; margin-bottom: 2px; }
+        .nav-item.active { color: var(--accent-color); }
         
         /* Tambahan CSS Tab & Form Input */
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -865,20 +873,6 @@
             }
             applyTheme(); // Terapkan ke UI
         }
-
-        /* --- BOTTOM NAV LOGIC --- */
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault(); // Mencegah lompat ke atas layar saat diklik
-                
-                // Hapus warna aktif dari semua ikon
-                navItems.forEach(nav => nav.classList.remove('active'));
-                
-                // Beri warna aktif pada ikon yang sedang diklik
-                item.classList.add('active');
-            });
-        });
 
         // Initialize First Load
         initTheme(); // Memuat tema yang tersimpan
