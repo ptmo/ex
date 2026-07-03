@@ -412,8 +412,8 @@
 
         <header class="header">
             <div class="header-title">
-                <h1>DANA PINJAM</h1>
-                <p>Limit s/d Rp 8.000.000</p>
+                <h1>DanaGo</h1>
+                <p style="font-weight: bold;">Limit s/d Rp 8.000.000</p>
             </div>
             <div class="header-actions">
                 <button class="action-btn" id="themeToggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
@@ -928,19 +928,25 @@
         function selectBank() {
             closeModal('modalBank');
             
-            // Prepare Receipt Data
+            // Perhitungan Data Struk & Chart
             const P = state.amount;
             const adminFee = P * state.adminFeeRate;
+            const totalInterest = P * state.rate * state.tenor;
+            const totalPayment = P + totalInterest;
             const netReceived = P - adminFee;
-            const totalPayment = P + (P * state.rate * state.tenor);
             const monthly = totalPayment / state.tenor;
 
-            document.getElementById('confirmNominal').textContent = 'Rp ' + formatRupiah(P);
-            document.getElementById('rNominal').textContent = 'Rp ' + formatRupiah(P);
-            document.getElementById('rAdmin').textContent = '- Rp ' + formatRupiah(adminFee);
-            document.getElementById('rTenor').textContent = state.tenor + ' Bulan';
+            // Update UI Teks Modal (Tanpa Error)
             document.getElementById('rBersih').textContent = 'Rp ' + formatRupiah(netReceived);
+            document.getElementById('rNominal').textContent = 'Rp ' + formatRupiah(totalPayment);
             document.getElementById('rCicilan').textContent = 'Rp ' + formatRupiah(monthly);
+            document.getElementById('rTenor').textContent = state.tenor + ' Bulan';
+
+            // Render Pie Chart Langsung di Sini
+            const totalPie = P + totalInterest + adminFee;
+            const pPokok = (P / totalPie) * 100;
+            const pBunga = (totalInterest / totalPie) * 100;
+            document.getElementById('pieChart').style.background = `conic-gradient(var(--accent-color) 0% ${pPokok}%, var(--primary-color) ${pPokok}% ${pPokok + pBunga}%, var(--danger-color) ${pPokok + pBunga}% 100%)`;
 
             setTimeout(() => openModal('modalConfirm'), 300);
         }
@@ -1246,8 +1252,13 @@
         function injectKycUI() {
             const profilTab = document.getElementById('tab-profil');
             if(!isKycVerified && !document.getElementById('kycBannerBtn')) {
+                
+                // Perbaikan tumpang tindih (Overlap Fix)
+                const firstCard = profilTab.querySelector('.card');
+                if(firstCard) firstCard.style.marginTop = '0'; 
+
                 const kycHtml = `
-                <div class="kyc-banner" id="kycBannerBtn" onclick="simulateKycProcess()">
+                <div class="kyc-banner" id="kycBannerBtn" onclick="simulateKycProcess()" style="margin-top: -20px; position: relative; z-index: 5;">
                     <div>
                         <h4 style="margin-bottom:4px;">Tingkatkan Limit s/d Rp 12 Juta</h4>
                         <p style="font-size:11px; opacity:0.9;">Verifikasi e-KTP dan Wajah Anda (1 Menit)</p>
@@ -1257,7 +1268,6 @@
                 profilTab.insertAdjacentHTML('afterbegin', kycHtml);
             }
         }
-
         function simulateKycProcess() {
             document.getElementById('sysLoader').classList.add('active');
             setTimeout(() => {
@@ -1291,25 +1301,6 @@
             } else {
                 document.getElementById('greetingLimitText').innerHTML = `Sisa Limit: <strong style="color:var(--accent-color)">Rp ${formatRupiah(currentLimit)}</strong>. Lunasi tagihan aktif untuk meminjam lagi.`;
             }
-        };
-
-        // 3. Modifikasi Pie Chart di Modal Konfirmasi
-        const oldSelectBank = selectBank;
-        selectBank = function() {
-            const P = state.amount;
-            const adminFee = P * state.adminFeeRate;
-            const totalInterest = P * state.rate * state.tenor;
-            const totalPayment = P + totalInterest;
-
-            // Hitung persentase untuk Pie Chart (CSS conic-gradient)
-            const totalPie = P + totalInterest + adminFee;
-            const pPokok = (P / totalPie) * 100;
-            const pBunga = (totalInterest / totalPie) * 100;
-            
-            document.getElementById('pieChart').style.background = `conic-gradient(var(--accent-color) 0% ${pPokok}%, var(--primary-color) ${pPokok}% ${pPokok + pBunga}%, var(--danger-color) ${pPokok + pBunga}% 100%)`;
-
-            // Jalankan fungsi asli untuk mengisi teks modal
-            oldSelectBank(); 
         };
 
         // 4. Modifikasi Progress Bar & Pelunasan Dipercepat di Tab Pinjaman
