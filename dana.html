@@ -247,21 +247,29 @@
         .nav-item i { font-size: 20px; margin-bottom: 2px; }
         .nav-item.active { color: var(--accent-color); }
 
-        /* Modals */
+        /* Modals - Dibuat Center Semua */
         .modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--overlay-bg); backdrop-filter: blur(4px);
-            display: flex; justify-content: center; align-items: flex-end;
+            display: flex; justify-content: center; align-items: center; /* Ubah ke center */
             opacity: 0; pointer-events: none; transition: var(--transition); z-index: 100;
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .modal-content {
-            background-color: var(--card-bg); width: 100%; border-top-left-radius: 28px; border-top-right-radius: 28px;
-            padding: 30px 24px; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: var(--card-bg); 
+            width: 90%; /* Lebar proporsional untuk modal tengah */
+            border-radius: var(--radius-lg); /* Radius melingkar di semua sudut */
+            padding: 30px 24px; 
+            transform: scale(0.9); /* Efek zoom in (bukan slide dari bawah) */
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             max-height: 85vh; overflow-y: auto;
         }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-overlay.active .modal-content { 
+            transform: scale(1); 
+            opacity: 1; 
+        }
         
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .modal-header h2 { font-size: 18px; font-weight: 700; color: var(--text-main); }
@@ -489,7 +497,8 @@
 
         /* --- FORMATTING UTILS --- */
         const formatRupiah = (number) => {
-            return new Intl.NumberFormat('id-ID').format(number);
+            // Memaksa pembulatan agar terhindar dari desimal koma (ex: ,333)
+            return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Math.round(number));
         };
         const parseRupiah = (str) => {
             let val = parseInt(str.replace(/[^0-9]/g, ''));
@@ -500,12 +509,25 @@
         const calculateLoan = () => {
             const P = state.amount;
             const T = state.tenor;
-            const R = state.rate;
+            
+            // Logika Bunga Dinamis: Semakin lama tenor, bunga sedikit lebih besar
+            let dynamicRate;
+            if (T === 3) dynamicRate = 0.06; // 6%
+            else if (T === 6) dynamicRate = 0.0733333333; // ~7.33% (Angka spesifik agar 1.25jt = pas cicilan 300rb)
+            else if (T === 9) dynamicRate = 0.08; // 8%
+            else dynamicRate = 0.085; // 12 bulan = 8.5%
+            
+            state.rate = dynamicRate; // Update rate di state
 
-            const totalInterest = P * R * T;
+            const totalInterest = P * dynamicRate * T;
             const totalPayment = P + totalInterest;
             const monthly = totalPayment / T;
 
+            // Update Teks Label Bunga di UI
+            document.querySelector('.result-row:first-child .result-label').textContent = 'Suku Bunga';
+            document.querySelector('.result-row:first-child .result-value').textContent = (dynamicRate * 100).toFixed(1).replace('.0', '') + '% / bln';
+
+            // Update Angka
             document.getElementById('monthlyInstallment').textContent = 'Rp ' + formatRupiah(monthly);
             document.getElementById('totalPayment').textContent = 'Rp ' + formatRupiah(totalPayment);
             updateSliderFill();
