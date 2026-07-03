@@ -613,6 +613,37 @@
             </div>
         </div>
 
+        <!-- Modal Struk Pembayaran Berhasil -->
+        <div class="modal-overlay modal-center" id="modalReceipt">
+            <div class="modal-content">
+                <div class="modal-header" style="margin-bottom: 8px; justify-content: center; border: none;">
+                    <i class="fas fa-check-circle icon-success" style="font-size: 56px; margin: 0; color: var(--success-color);"></i>
+                </div>
+                <h2 style="text-align: center; margin-bottom: 20px; font-size: 20px;">Pembayaran Berhasil!</h2>
+                
+                <div class="receipt-box" style="text-align: left; background: var(--bg-color); padding: 20px; border-radius: var(--radius-md);">
+                    <div class="receipt-row">
+                        <span style="color: var(--text-muted);">Waktu Bayar</span>
+                        <span id="receiptTime" style="text-align: right; font-weight: 600;">-</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span style="color: var(--text-muted);">Metode Pembayaran</span>
+                        <span id="receiptMethod" style="font-weight: 600;">-</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span style="color: var(--text-muted);">Pembayaran Untuk</span>
+                        <span style="font-weight: 600;">Cicilan Ke-<span id="receiptMonth">0</span></span>
+                    </div>
+                    <div class="receipt-row" style="border-top: 2px dashed var(--border-color); padding-top: 16px; margin-top: 16px;">
+                        <span style="font-weight: 600; font-size: 14px;">Total Dibayar</span>
+                        <span class="text-success" id="receiptAmount" style="font-size: 20px; font-weight: 800;">Rp 0</span>
+                    </div>
+                </div>
+                
+                <button class="btn-submit" style="margin-top: 24px;" onclick="closeModal('modalReceipt')">Selesai</button>
+            </div>
+        </div>
+
         <div class="modal-overlay modal-center" id="modalNotifDetail">
             <div class="modal-content">
                 <div class="modal-header" style="margin-bottom: 12px;">
@@ -947,12 +978,45 @@
 
         function confirmPayment() {
             if(selectedInstallmentIndex !== null) {
+                // Ambil data cicilan yang sedang dibayar dan metode pembayarannya
+                const inst = activeLoan.installments[selectedInstallmentIndex];
+                const method = document.getElementById('paymentMethod').value;
+                const amountFormatted = formatRupiah(inst.amount);
+                
+                // Dapatkan waktu saat ini secara real-time
+                const now = new Date();
+                const timeString = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+
+                // 1. Ubah status menjadi lunas
                 activeLoan.installments[selectedInstallmentIndex].isPaid = true;
+                
+                // 2. Buat Notifikasi Baru (Struk Digital)
+                const newNotif = {
+                    id: Date.now(),
+                    title: `Pembayaran Cicilan Ke-${inst.month} Berhasil`,
+                    message: `Terima kasih! Pembayaran tagihan Anda sebesar Rp ${amountFormatted} menggunakan metode ${method} telah berhasil dikonfirmasi pada ${timeString}.`,
+                    time: timeString,
+                    isRead: false
+                };
+                notifications.unshift(newNotif); // Masukkan ke urutan paling atas
+                
+                // 3. Simpan memori dan render ulang tampilan UI
                 saveAppMemories();
-                renderPinjamanTab(); // Update UI langsung
-                updateDashboardState(); // Memperbarui sisa limit di dashboard utama
+                renderPinjamanTab(); 
+                updateDashboardState();
+                renderNotifications(); // Update lencana lonceng merah otomatis
+                
+                // 4. Tutup modal bayar lama
                 closeModal('modalPayment');
-                showToast('Pembayaran Berhasil Dikonfirmasi!');
+                
+                // 5. Isi data ke dalam modal struk popup baru
+                document.getElementById('receiptTime').textContent = timeString;
+                document.getElementById('receiptMethod').textContent = method;
+                document.getElementById('receiptMonth').textContent = inst.month;
+                document.getElementById('receiptAmount').textContent = 'Rp ' + amountFormatted;
+                
+                // Munculkan popup nota pembayaran
+                setTimeout(() => openModal('modalReceipt'), 300);
             }
         }
 
