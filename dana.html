@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dana Pinjam | Premium App</title>
+    <title>Dana Pinjam</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -392,6 +392,12 @@
 
         <main class="content" style="padding-bottom: 90px;">
             <div id="tab-dashboard" class="tab-content active">
+                
+                <div style="margin-bottom: 20px; color: var(--text-main); padding: 0 4px;">
+                    <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">Halo, Arie Novra Rosadi 👋</h2>
+                    <p style="font-size: 13px; color: var(--text-muted);" id="greetingLimitText">Limit Anda <strong>Rp 8.000.000</strong>. Yuk ajukan pinjaman sekarang!</p>
+                </div>
+
                 <div class="card">
                     <div class="form-group">
                         <label>Plafon Pinjaman</label>
@@ -432,7 +438,7 @@
                     </div>
                 </div>
 
-                <button class="btn-submit" onclick="openModal('modalBank')">Ajukan Sekarang</button>
+                <button class="btn-submit" id="btnSubmitAjukan" onclick="openModal('modalBank')">Ajukan Sekarang</button>
             </div>
 
             <div id="tab-pinjaman" class="tab-content">
@@ -888,6 +894,7 @@
             showToast('Status detail pinjaman terverifikasi');
             renderNotifications();
             renderPinjamanTab(); // Langsung render tab pinjaman saat disetujui
+            updateDashboardState();
         }
 
         function renderPinjamanTab() {
@@ -943,6 +950,7 @@
                 activeLoan.installments[selectedInstallmentIndex].isPaid = true;
                 saveAppMemories();
                 renderPinjamanTab(); // Update UI langsung
+                updateDashboardState(); // Memperbarui sisa limit di dashboard utama
                 closeModal('modalPayment');
                 showToast('Pembayaran Berhasil Dikonfirmasi!');
             }
@@ -1025,6 +1033,58 @@
             }
         }
 
+        /* --- LOGIKA LIMIT & STATUS DASHBOARD --- */
+        function updateDashboardState() {
+            const maxLimit = 8000000;
+            let currentLimit = maxLimit;
+            let hasActiveLoan = false;
+
+            // Cek apakah ada pinjaman berjalan dan apakah sudah lunas semua
+            if (activeLoan) {
+                const isAllPaid = activeLoan.installments.every(inst => inst.isPaid);
+                if (!isAllPaid) {
+                    hasActiveLoan = true;
+                    currentLimit = maxLimit - activeLoan.amount; // Kurangi limit
+                } else {
+                    // Jika semua sudah lunas, limit kembali utuh
+                    hasActiveLoan = false; 
+                }
+            }
+
+            // Update Teks Sapaan & Limit
+            const greetingText = document.getElementById('greetingLimitText');
+            if (hasActiveLoan) {
+                greetingText.innerHTML = `Sisa Limit: <strong style="color:var(--accent-color)">Rp ${formatRupiah(currentLimit)}</strong>. Lunasi tagihan aktif untuk meminjam lagi.`;
+            } else {
+                greetingText.innerHTML = `Limit Anda <strong>Rp ${formatRupiah(maxLimit)}</strong>. Yuk ajukan pinjaman sekarang!`;
+            }
+
+            // Kunci atau Buka Tombol & Slider
+            const btnSubmit = document.getElementById('btnSubmitAjukan');
+            const slider = document.getElementById('amountSlider');
+            const inputAmount = document.getElementById('amountInput');
+            
+            if (hasActiveLoan) {
+                // Kunci form pengajuan
+                btnSubmit.disabled = true;
+                btnSubmit.style.background = 'var(--border-color)';
+                btnSubmit.style.color = 'var(--text-muted)';
+                btnSubmit.style.boxShadow = 'none';
+                btnSubmit.textContent = 'Pinjaman Sedang Berjalan';
+                slider.disabled = true;
+                inputAmount.disabled = true;
+            } else {
+                // Buka form pengajuan (Reset)
+                btnSubmit.disabled = false;
+                btnSubmit.style.background = 'var(--accent-color)';
+                btnSubmit.style.color = '#000';
+                btnSubmit.style.boxShadow = '0 8px 20px rgba(212, 175, 55, 0.3)';
+                btnSubmit.textContent = 'Ajukan Sekarang';
+                slider.disabled = false;
+                inputAmount.disabled = false;
+            }
+        }
+
         // Fungsi untuk mengecek Local Storage saat halaman pertama kali dimuat
         function initTheme() {
             const savedTheme = localStorage.getItem('dana_pinjam_theme');
@@ -1039,7 +1099,8 @@
         calculateLoan();
         renderNotifications();
         renderBanks();
-        renderPinjamanTab(); // Load data pinjaman jika sebelumnya ada
+        renderPinjamanTab(); 
+        updateDashboardState(); // <--- Tambahkan baris inia
         
     </script>
 </body>
